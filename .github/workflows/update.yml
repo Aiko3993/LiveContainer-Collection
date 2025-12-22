@@ -1,0 +1,66 @@
+name: Update Source
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Run every hour
+  workflow_dispatch: 
+    inputs:
+      app_data:
+        description: 'JSON string of app data to process (Add/Update/Remove)'
+        required: false
+        type: string
+      mode:
+        description: 'Operation mode: add, update, remove'
+        required: false
+        default: 'update'
+        type: choice
+        options:
+          - add
+          - update
+          - remove
+      issue_number:
+        description: 'Issue number to close upon completion'
+        required: false
+        type: string
+  push:
+    paths:
+      - '.github/scripts/**'
+      - '.github/workflows/update.yml'
+      - '**/apps.json'
+
+permissions:
+  contents: write
+
+jobs:
+  update-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests Pillow urllib3 pyyaml
+
+      - name: Run update script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Running update_source.py..."
+          python .github/scripts/update_source.py
+
+      - name: Sync Issue Template
+        run: python .github/scripts/sync_issue_template.py
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update source.json, app lists, and templates" && git pull --rebase && git push)

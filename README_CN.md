@@ -1,0 +1,55 @@
+# Aiko3993's Sideload Source for iOS
+
+[![Web Interface](https://img.shields.io/badge/Web_Interface-View_Source-blue?style=for-the-badge&logo=safari)](https://aiko3993.github.io/iOS-Sideload-Source/)
+[![Add App](https://img.shields.io/badge/Contribute-Add_App-green?style=for-the-badge&logo=github)](CONTRIBUTING_CN.md)
+
+这是一个适用于 **AltStore**、**SideStore** 和 **LiveContainer** 的个人侧载应用源，或许还有更多。
+它会自动从 GitHub Releases 获取最新的 IPA，并生成通用的源文件。 
+此外，它还提供了一个用于浏览应用的网页界面。
+
+[English](README.md)
+
+## 使用方法
+
+### 方法 1：网页界面
+访问 **[网页界面](https://aiko3993.github.io/iOS-Sideload-Source/)** 浏览应用，并且：
+*   使用 **Install** 按钮一键安装到 AltStore、SideStore 或 LiveContainer。
+
+### 方法 2：手动添加
+
+将这些添加到您的侧载工具中：
+
+```
+https://raw.githubusercontent.com/Aiko3993/iOS-Sideload-Source/main/sources/standard/source.json
+```
+
+## 提交应用
+
+想添加新应用？非常简单！
+👉 **[阅读应用提交指南](CONTRIBUTING_CN.md)**
+
+## 支持应用列表
+ 
+> *支持的应用列表由脚本自动生成。*
+ 
+👉 **[查看支持应用列表](APPS.md)**
+ 
+## 自动化机制
+
+本仓库完全基于 GitHub Actions 运行：
+*   **每小时更新**: 自动检查所有应用的新版本。
+*   **智能解析**: 直接从 IPA 文件中提取元数据 (版本号、BundleID、主题色)。
+*   **自动图标发现**: 如果未配置图标，自动扫描仓库寻找最佳图标。
+*   **自动验证**: 提交 PR 时会自动检查 `apps.json` 格式是否正确。
+
+## 其他源
+
+**NSFW 源:**
+
+```
+https://raw.githubusercontent.com/Aiko3993/iOS-Sideload-Source/main/sources/nsfw/source.json
+```
+
+## 免责声明
+ 
+本仓库仅作为搬运和索引，所有应用版权归原作者所有。请在使用前自行评估风险。

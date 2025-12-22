@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Aidoku",
+    "github_repo": "Aidoku/Aidoku",
+    "icon_url": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/main/Shared/Assets.xcassets/AppIcon.appiconset/Icon.png"
+  },
+  {
+    "name": "Venera",
+    "github_repo": "venera-app/venera",
+    "icon_url": "https://raw.githubusercontent.com/venera-app/venera/refs/heads/master/assets/app_icon.png"
+  },
+  {
+    "name": "NeoFreeBird",
+    "github_repo": "NeoFreeBird/app",
+    "icon_url": "https://raw.githubusercontent.com/NeoFreeBird/app/refs/heads/main/Branding/Icon.png"
+  },
+  {
+    "name": "Animeko",
+    "github_repo": "open-ani/animeko",
+    "icon_url": "https://raw.githubusercontent.com/open-ani/animeko/main/app/desktop/appResources/linux-x64/icon.png"
+  },
+  {
+    "name": "PiliPlus",
+    "github_repo": "bggRGjQaUbCoE/PiliPlus",
+    "icon_url": "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/images/logo/logo.png"
+  },
+  {
+    "name": "Apollo",
+    "github_repo": "Balackburn/Apollo",
+    "icon_url": "https://raw.githubusercontent.com/Balackburn/Apollo/refs/heads/main/apollo_icons/icon_91.webp"
+  }
+]
