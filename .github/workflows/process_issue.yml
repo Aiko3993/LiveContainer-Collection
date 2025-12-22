@@ -84,6 +84,19 @@ jobs:
           APPS_JSON: ${{ steps.parse.outputs.apps_json }}
         run: python3 .github/scripts/add_app.py
 
+      - name: Generate Commit Message
+        id: msg
+        run: |
+          # Parse the APPS_JSON again to get details for the commit message
+          # This is a bit of a hack using python one-liner to extract the first app's name
+          APP_NAME=$(python3 -c "import json, os; print(json.loads(os.environ['APPS_JSON'])[0]['name'])" 2>/dev/null || echo "App")
+          REPO_NAME=$(python3 -c "import json, os; print(json.loads(os.environ['APPS_JSON'])[0]['repo'])" 2>/dev/null || echo "Unknown")
+          
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+        env:
+          APPS_JSON: ${{ steps.parse.outputs.apps_json }}
+
       - name: Validate Changes
         run: python3 .github/scripts/validate_apps.py
 

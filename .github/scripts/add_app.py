@@ -143,6 +143,9 @@ def main():
     # Output results for comment
     with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
         fh.write(f'results={json.dumps(results)}\n')
+        # Also output action for the first result to support commit message
+        if results:
+            fh.write(f'action={results[0]["status"]}\n')
 
 if __name__ == "__main__":
     main()
