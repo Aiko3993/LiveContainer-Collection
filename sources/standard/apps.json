@@ -99,7 +99,7 @@
   {
     "name": "Asspp",
     "github_repo": "Lakr233/Asspp",
-    "icon_url": "https://github.com/Lakr233/Asspp/blob/main/Asspp/App/Assets.xcassets/AppIcon.appiconset/asspp_tinted.png?raw=true",
+    "icon_url": "https://raw.githubusercontent.com/Lakr233/Asspp/refs/heads/main/Asspp/App/Assets.xcassets/AppIcon.appiconset/asspp_tinted.png",
     "bundle_id": "wiki.qaq.Asspp"
   },
   {
