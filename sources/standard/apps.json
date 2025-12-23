@@ -31,7 +31,8 @@
   },
   {
     "name": "LiveContainer",
-    "github_repo": "LiveContainer/LiveContainer"
+    "github_repo": "LiveContainer/LiveContainer",
+    "pre_release": false
   },
   {
     "name": "PPSSPP",
