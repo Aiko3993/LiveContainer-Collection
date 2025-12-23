@@ -33,9 +33,9 @@ body:
   id: category
   attributes:
     label: Category
-    options:
-    - NSFW
+    options: &id001
     - Standard
+    - NSFW
   validations:
     required: true
 - type: input
@@ -64,9 +64,7 @@ body:
   id: category_2
   attributes:
     label: Category 2
-    options:
-    - NSFW
-    - Standard
+    options: *id001
   validations:
     required: false
 - type: input
@@ -96,9 +94,7 @@ body:
   id: category_3
   attributes:
     label: Category 3
-    options:
-    - NSFW
-    - Standard
+    options: *id001
   validations:
     required: false
 - type: input

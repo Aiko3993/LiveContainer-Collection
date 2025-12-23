@@ -35,6 +35,15 @@ def sync_issue_template():
             formatted_categories.append(c)
     
     categories = sorted(list(set(formatted_categories)))
+    
+    # Custom Sort: Standard first, then NSFW, then others alphabetically
+    def sort_key(name):
+        if name == 'Standard': return 0
+        if name == 'NSFW': return 1
+        return 2
+        
+    categories.sort(key=lambda x: (sort_key(x), x))
+    
     logger.info(f"Detected categories: {categories}")
 
     with open(template_path, 'r', encoding='utf-8') as f:
