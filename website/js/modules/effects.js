@@ -5,6 +5,62 @@ import { getIcon } from './utils.js';
 let eggClickCount = 0;
 let eggTimer = null;
 
+export function initCheatCodes() {
+    let konamiSeq = [];
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    const vimCode = ['k', 'k', 'j', 'j', 'h', 'l', 'h', 'l', 'b', 'a'];
+    
+    document.addEventListener('keydown', (e) => {
+        // Normalize key (handle case insensitivity for 'b', 'a')
+        const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+        
+        // Add to sequence
+        konamiSeq.push(key);
+        
+        // Trim sequence to max length
+        if (konamiSeq.length > 10) {
+            konamiSeq.shift();
+        }
+        
+        // Check Match
+        const matchKonami = konamiSeq.every((k, i) => k === konamiCode[i] || (konamiCode[i].length === 1 && k === konamiCode[i]));
+        const matchVim = konamiSeq.every((k, i) => k === vimCode[i]);
+        
+        if (konamiSeq.length === 10 && (matchKonami || matchVim)) {
+            playKonamiEntry();
+            konamiSeq = []; // Reset
+        }
+    });
+}
+
+function playKonamiEntry() {
+    // 1. Flash Overlay (Removed per user request for safety)
+    // const flash = document.createElement('div');
+    // flash.className = 'fixed inset-0 bg-white z-[10000] animate-flash pointer-events-none mix-blend-difference';
+    // document.body.appendChild(flash);
+    
+    // 2. Retro Text Container (Flexbox for perfect centering, avoids transform conflict with animate-bounce)
+    const container = document.createElement('div');
+    container.className = 'fixed inset-0 z-[10001] flex items-center justify-center pointer-events-none';
+    document.body.appendChild(container);
+
+    const text = document.createElement('div');
+    // Responsive text size: text-3xl (mobile) -> text-5xl (tablet) -> text-7xl (desktop)
+    text.className = 'px-4 text-center text-3xl sm:text-5xl md:text-7xl font-black text-green-500 font-mono animate-bounce drop-shadow-[0_0_15px_rgba(34,197,94,0.8)] break-words max-w-full';
+    text.innerText = "CHEAT CODE ACTIVATED";
+    container.appendChild(text);
+    
+    // 3. Sound Effect (Simulated visually via shake)
+    document.body.classList.add('animate-shake');
+    
+    setTimeout(() => {
+        // flash.remove(); 
+        container.remove(); // Remove the wrapper
+        document.body.classList.remove('animate-shake');
+        openDeveloperConsole();
+    }, 1500);
+}
+
 export function showDeveloperConsolePrompt() {
     const searchInput = document.getElementById('search-input');
     // Prevent duplicate toasts
@@ -70,6 +126,15 @@ export function openDeveloperConsole() {
         effects.splice(tuxIndex > -1 ? tuxIndex : effects.length, 0, 'ascii-waifu');
     }
 
+    // Default Config
+    const devConfig = {
+        duration: 5000,
+        autoDismiss: true,
+        gravity: 1.0,
+        speed: 1.0,
+        scale: 1.0
+    };
+
     overlay.innerHTML = `
         <div class="flex justify-between items-center border-b border-green-500/30 pb-4 mb-4">
             <h2 class="text-xl font-bold flex items-center gap-2">
@@ -80,6 +145,33 @@ export function openDeveloperConsole() {
         </div>
         
         <div class="flex-grow overflow-y-auto custom-scrollbar">
+            <!-- Settings Section -->
+            <div class="mb-6 border-b border-green-500/30 pb-6">
+                <h3 class="text-xs font-bold text-green-400 opacity-70 mb-3 uppercase tracking-wider">> RUNTIME CONFIGURATION</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                    <div class="flex flex-col gap-1">
+                        <label class="opacity-80">DURATION (MS)</label>
+                        <input type="number" id="cfg-duration" value="${devConfig.duration}" class="bg-black/50 border border-green-500/30 text-green-400 px-2 py-1 rounded focus:border-green-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="opacity-80">GRAVITY (0.1 - 5.0)</label>
+                        <input type="number" id="cfg-gravity" step="0.1" value="${devConfig.gravity}" class="bg-black/50 border border-green-500/30 text-green-400 px-2 py-1 rounded focus:border-green-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="opacity-80">SPEED (0.1 - 5.0)</label>
+                        <input type="number" id="cfg-speed" step="0.1" value="${devConfig.speed}" class="bg-black/50 border border-green-500/30 text-green-400 px-2 py-1 rounded focus:border-green-500 outline-none">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="opacity-80">SCALE (0.5 - 3.0)</label>
+                        <input type="number" id="cfg-scale" step="0.1" value="${devConfig.scale}" class="bg-black/50 border border-green-500/30 text-green-400 px-2 py-1 rounded focus:border-green-500 outline-none">
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-4">
+                    <input type="checkbox" id="cfg-autodismiss" checked class="accent-green-500">
+                    <label for="cfg-autodismiss" class="cursor-pointer select-none">AUTO DISMISS</label>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 ${effects.map(effect => `
                     <button class="dev-effect-btn text-left p-4 border border-green-500/30 hover:bg-green-500/10 hover:border-green-500 rounded-lg transition-all group relative overflow-hidden" data-effect="${effect}">
@@ -103,14 +195,37 @@ export function openDeveloperConsole() {
     // Handlers
     document.getElementById('dev-close').onclick = () => overlay.remove();
     
+    // Config Listeners
+    const durationInput = document.getElementById('cfg-duration');
+    const gravityInput = document.getElementById('cfg-gravity');
+    const speedInput = document.getElementById('cfg-speed');
+    const scaleInput = document.getElementById('cfg-scale');
+    const dismissCheck = document.getElementById('cfg-autodismiss');
+    
+    // Override triggerConfetti to inject config
+    const originalTrigger = triggerConfetti;
+    // We can't easily override the export, but we can pass config if we modify triggerConfetti signature
+    // OR we can rely on triggerConfetti being in the same module scope if we promote devConfig.
+    // However, triggerConfetti is exported.
+    
     overlay.querySelectorAll('.dev-effect-btn').forEach(btn => {
         btn.onclick = () => {
             const effect = btn.dataset.effect;
+            
+            // Read latest config
+            const config = {
+                duration: parseInt(durationInput.value) || 5000,
+                autoDismiss: dismissCheck.checked,
+                gravity: parseFloat(gravityInput.value) || 1.0,
+                speed: parseFloat(speedInput.value) || 1.0,
+                scale: parseFloat(scaleInput.value) || 1.0
+            };
+            
             overlay.remove();
             if(effect === 'element-eater') {
                 triggerElementEater();
             } else {
-                triggerConfetti(effect);
+                triggerConfetti(effect, config); // Pass config
             }
         };
     });
@@ -160,8 +275,8 @@ export function handleEasterEgg() {
              return;
         }
 
-        // Reset timer (if no click for 1000ms, revert to green)
-        eggTimer = setTimeout(resetEgg, 1000);
+        // Reset timer (if no click for 3000ms, revert to green)
+        eggTimer = setTimeout(resetEgg, 3000);
     }
 }
 
@@ -257,8 +372,19 @@ export function resetEgg() {
     }
 }
 
-export function triggerConfetti(forcedEffect = null) {
+export function triggerConfetti(forcedEffect = null, config = {}) {
     const { isMobile } = window;
+    
+    // Default Config Merger
+    const cfg = {
+        duration: 5000,
+        autoDismiss: true,
+        gravity: 1.0,
+        speed: 1.0,
+        scale: 1.0,
+        ...config
+    };
+
     // Randomize effects
     const effects = [
         'emoji-rain', 'matrix-rain', 'spin-madness',
@@ -289,6 +415,9 @@ export function triggerConfetti(forcedEffect = null) {
     
     // Helper for clean fade out
     const fadeOutAndRemove = (delay) => {
+            // Respect AutoDismiss setting (if false, never auto remove, unless delay is 0 which implies forced close)
+            if (delay > 0 && !cfg.autoDismiss) return;
+            
             setTimeout(() => {
                 container.style.opacity = '0';
                 setTimeout(() => {
@@ -311,18 +440,60 @@ export function triggerConfetti(forcedEffect = null) {
     }
 
     if (effect === 'emoji-rain') {
-        const emojis = ['💥', '📱', '🎉', '🍎', '💻', '🚀', '💊', '👻', '🔞', '🧱'];
+        // Expanded Emoji List (No R18)
+        const baseEmojis = [
+            '💥', '📱', '🎉', '🍎', '💻', '🚀', '💊', '👻', '🧱', '🔥', '✨', 
+            '💿', '💾', '🕹️', '👾', '🤖', '👽', '🦄', '🌈', '🍕', '🍔', '🍺', 
+            '💡', '📷', '🔋', '🔌', '📡', '🔭', '🎁', '🎈', '🎊', '🏆'
+        ];
+        
+        // Twemoji (Twitter/Discord style) Base URL
+        const twemojiBase = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@latest/assets/svg/';
+        
+        // Helper to get hex code for Twemoji
+        const getHex = (char) => char.codePointAt(0).toString(16);
+
         for (let i = 0; i < 60; i++) {
             const el = document.createElement('div');
-            el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            const char = baseEmojis[Math.floor(Math.random() * baseEmojis.length)];
+            
+            // Randomly choose style: Native (Text) vs Twemoji (Image)
+            // 30% chance for Twemoji (Discord style)
+            if (Math.random() < 0.3) {
+                const img = document.createElement('img');
+                img.src = `${twemojiBase}${getHex(char)}.svg`;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                el.appendChild(img);
+            } else {
+                el.innerText = char;
+                // Randomize Native Font Stack to try and get Apple vs Google look (if installed)
+                const fonts = [
+                    '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif', // Default/System
+                    '"Noto Color Emoji", sans-serif', // Force Noto if available
+                    '"Segoe UI Emoji", sans-serif'    // Force Windows if available
+                ];
+                el.style.fontFamily = fonts[Math.floor(Math.random() * fonts.length)];
+            }
+
             el.style.position = 'absolute';
             el.style.left = Math.random() * 100 + 'vw';
             el.style.top = '-50px';
-            el.style.fontSize = (Math.random() * 20 + 20) + 'px';
-            el.style.animation = `fall-down ${Math.random() * 2 + 1}s linear forwards`;
+            const size = (Math.random() * 20 + 20) * cfg.scale; // Scale Config
+            el.style.fontSize = size + 'px';
+            el.style.width = size + 'px'; // For image sizing
+            el.style.height = size + 'px';
+            
+            // Adjust Fall Duration based on Gravity (Higher gravity = Faster/Lower duration)
+            const duration = (Math.random() * 2 + 1) / cfg.gravity;
+            
+            el.style.animation = `fall-down ${duration}s linear forwards`;
             el.style.animationDelay = Math.random() * 0.5 + 's';
             container.appendChild(el);
         }
+        
+        // Auto-dismiss for emoji rain
+        fadeOutAndRemove(cfg.duration);
     } else if (effect === 'matrix-rain') {
         container.style.pointerEvents = 'auto';
         const canvas = document.createElement('canvas');
@@ -333,11 +504,34 @@ export function triggerConfetti(forcedEffect = null) {
         container.appendChild(canvas);
         
         const ctx = canvas.getContext('2d');
-        const columns = Math.floor(canvas.width / 20);
-        const drops = Array(columns).fill(1);
         const chars = "01日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ12345789:・.=\"*+-<>¦｜"; 
         
+        let columns = Math.ceil(canvas.width / 20); // ceil ensures coverage
+        let drops = Array(columns).fill(1);
+        
+        // Resize Handler
+        const onResize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Recalculate columns
+            const newColumns = Math.ceil(canvas.width / 20); // ceil ensures coverage
+            // Preserve existing drops, extend or truncate
+            if (newColumns > columns) {
+                const added = new Array(newColumns - columns).fill(1);
+                drops = drops.concat(added);
+            } else if (newColumns < columns) {
+                drops = drops.slice(0, newColumns);
+            }
+            columns = newColumns;
+        };
+        window.addEventListener('resize', onResize);
+
         function drawMatrix() {
+            // Auto-detect resize
+            if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+                onResize();
+            }
+
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#0F0';
@@ -351,11 +545,23 @@ export function triggerConfetti(forcedEffect = null) {
                 drops[i]++;
             }
         }
-        const interval = setInterval(drawMatrix, 50);
+        const interval = setInterval(drawMatrix, 50 / cfg.speed); // Speed Config
         
-        setTimeout(() => clearInterval(interval), 5000);
-        fadeOutAndRemove(5000);
-        return;
+        // Cleanup only if Auto Dismiss is enabled
+        if (cfg.autoDismiss) {
+            setTimeout(() => {
+                clearInterval(interval);
+                window.removeEventListener('resize', onResize);
+                fadeOutAndRemove(0);
+            }, cfg.duration);
+        } else {
+            // If manual close (e.g. via console or external), we need to ensure listeners are cleaned
+            // But since this effect doesn't have a close button, it runs forever until reload if autoDismiss is false
+            // unless we provide a way to close it.
+            // The container has pointer-events: auto, so we can click to close? No, it just eats clicks.
+            // Let's add a click-to-close if autoDismiss is false, or just let it run.
+            // User asked for "disable auto dismiss", implying infinite run.
+        }
     } else if (effect === 'spin-madness') {
         document.body.style.transition = 'transform 1s ease-in-out';
         document.body.style.transform = 'rotate(360deg)';
@@ -373,222 +579,179 @@ export function triggerConfetti(forcedEffect = null) {
             const velocity = Math.random() * 500 + 200;
             const tx = Math.cos(angle) * velocity;
             const ty = Math.sin(angle) * velocity;
-            el.style.transition = 'all 1s ease-out';
+            el.style.transition = `all ${1 / cfg.speed}s ease-out`; // Speed config
             container.appendChild(el);
             requestAnimationFrame(() => {
                 el.style.transform = `translate(${tx}px, ${ty}px) rotate(${Math.random()*720}deg)`;
                 el.style.opacity = '0';
             });
         }
-        fadeOutAndRemove(4000);
+        fadeOutAndRemove(Math.min(cfg.duration, 4000)); // Spin madness is short
     } else if (effect === 'ascii-waifu') {
-        // Fullscreen overlay background
         container.style.pointerEvents = 'auto'; 
-        
-        const pre = document.createElement('pre');
-        pre.style.position = 'absolute';
-        pre.style.top = '50%';
-        pre.style.left = '50%';
-        pre.style.transformOrigin = 'center center'; 
-        pre.style.fontSize = '10px'; 
-        pre.style.lineHeight = '10px';
-        pre.style.fontFamily = 'monospace';
-        pre.style.transition = 'opacity 1s ease-out, color 0.3s ease, background-color 0.3s ease';
-        pre.style.opacity = '0';
-        pre.style.userSelect = 'none';
+        container.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        container.style.display = 'flex';
+        container.style.alignItems = 'center';
+        container.style.justifyContent = 'center';
+        container.style.zIndex = '10000'; // High z-index for input
 
-        // Theme Manager - Enforce Dark Mode
-        const updateTheme = () => {
-            // User requested: Always dark background, no invert logic
-            container.style.backgroundColor = '#000000';
-            pre.style.color = '#ff69b4'; // Pink text
+        // 1. Terminal Input Interface
+        const terminal = document.createElement('div');
+        terminal.className = 'w-full max-w-2xl bg-black border border-green-500 font-mono text-green-500 p-6 rounded shadow-[0_0_30px_rgba(34,197,94,0.3)] flex flex-col gap-4 m-4 animate-scale-up';
+        terminal.innerHTML = `
+            <div class="border-b border-green-500/50 pb-2 mb-2 flex justify-between items-center">
+                <span class="font-bold text-lg">> ART_COMPILER_V1.0</span>
+                <span class="animate-pulse">_</span>
+            </div>
+            
+            <div class="flex flex-col gap-2">
+                <label class="text-xs font-bold opacity-70">>> INPUT_ASCII_SEQUENCE</label>
+                <textarea id="waifu-art" rows="10" class="w-full bg-black/50 border border-green-500/30 text-xs p-2 focus:border-green-500 outline-none text-green-400 custom-scrollbar" placeholder="Paste ASCII Art Here..."></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-bold opacity-70">>> ASPECT_RATIO (W:H)</label>
+                    <input type="text" id="waifu-ratio" value="1:1" class="w-full bg-black/50 border border-green-500/30 text-xs p-2 focus:border-green-500 outline-none text-green-400" placeholder="e.g. 3:4">
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-bold opacity-70">>> COLOR_HEX</label>
+                    <input type="text" id="waifu-color" value="#ff69b4" class="w-full bg-black/50 border border-green-500/30 text-xs p-2 focus:border-green-500 outline-none text-green-400" placeholder="#RRGGBB">
+                </div>
+            </div>
+
+            <div class="pt-4 flex gap-3">
+                <button id="waifu-submit" class="flex-1 py-2 bg-green-500/20 hover:bg-green-500/40 border border-green-500 text-green-400 font-bold uppercase tracking-wider transition-all">
+                    > COMPILE & RENDER
+                </button>
+                <button id="waifu-cancel" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/40 border border-red-500 text-red-400 font-bold uppercase tracking-wider transition-all">
+                    ABORT
+                </button>
+            </div>
+        `;
+        container.appendChild(terminal);
+
+        const cleanUpInput = () => {
+             terminal.remove();
         };
-        
-        // Initial set
-        updateTheme();
-        
-        // Watch for theme changes removed as per user request
 
+        // Cancel Handler
+        terminal.querySelector('#waifu-cancel').onclick = () => {
+            fadeOutAndRemove(0);
+        };
 
-        // Waifu Collection - Add more ASCII art strings to this array
-        const waifus = [
-            {
-                ratio: "3:4",
-                art: `
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠟⠉⣀⠤⢿⣿⣷⠦⢤⣈⠉⠙⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⡩⢅⣐⣲⣀⠄⢠⣴⣊⡉⢙⡻⢿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⡿⣿⣿⣿⡿⢛⢥⣶⠶⠆⣌⣵⣾⣛⠛⠛⢿⣷⡎⢙⢶⣄⠀⠈⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠁⢠⣮⣶⠟⣡⡔⢈⣷⡢⣄⣉⠻⡅⠈⠲⡝⢿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣬⣍⠁⢀⣴⠛⣡⣴⣰⣿⣿⣿⢿⡇⡠⢌⠡⣒⣂⣶⣜⢧⠑⣄⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢨⢸⣿⠏⠣⠾⠟⠀⠛⠙⡂⠈⣊⠁⠌⠢⡀⠜⣦⠙⢿⣿⣿⣿⣿
-⣿⣿⣿⣿⡿⠃⢀⣪⡅⠰⠭⠁⠫⠘⢩⡭⠕⣘⣳⡔⣦⡙⣿⣿⣿⡅⠪⡼⣦⡈⢿⣿⣿⣿⣿⣿⣿⡟⠀⡏⣿⡏⠀⣤⡕⣸⣸⡇⢿⣿⣷⢹⣧⢹⡘⢢⠀⠜⢇⠈⢿⣿⣿⣿
-⣿⣿⣿⡿⠁⢠⡟⡛⢠⣾⣷⢀⠐⣧⠐⣾⣾⡹⣿⣿⡘⣷⡔⠹⣿⣿⡄⠱⢹⣷⡀⢻⢻⣿⣿⣿⣿⢣⠀⡇⣿⠀⢆⡏⢱⣿⢸⢹⡀⢻⣿⠃⢛⠀⢣⢡⠊⠐⠘⢸⢸⣿⣿⣿
-⣿⣿⡟⠁⡅⡞⣰⢃⣿⢻⡇⠘⠄⠹⣆⢨⣿⡇⠟⠓⢐⠘⣪⠀⢹⣿⣿⠀⠃⣿⡇⠀⠇⣿⣿⣿⡏⠌⠈⢳⡌⠀⢸⡏⠞⢩⢰⠀⣷⠸⣿⡇⠸⠸⢌⢸⢀⢰⠁⣼⣿⣿⣿⣿
-⣿⡟⡀⢰⠃⠀⡼⢸⢻⢘⠁⠀⣴⢠⠛⡗⡝⣇⠜⠙⢇⠁⠀⠑⠄⡉⢛⠘⠘⠌⠃⠀⣴⣿⣿⣿⣿⠂⢔⣤⢹⠀⠊⣼⠘⠈⠂⠈⢸⠈⠙⠀⠀⢤⡄⢀⡏⢀⣶⣼⣿⣿⣿⣿
-⣿⢰⡇⡿⠀⡂⠇⡸⠘⠘⢀⣇⢿⡇⠃⠀⠱⠘⠜⠄⠀⠈⠁⠀⠀⠋⡛⠄⢃⣶⣸⠄⢹⣿⣿⣿⡇⡀⠸⣿⠙⡀⢤⠉⡀⠠⠀⠙⣬⣤⣥⣴⣀⣜⣁⢈⠀⣸⣿⣿⣿⣿⣿⣿
-⣿⣿⢇⠀⡄⣰⠸⢈⣆⠀⠀⣠⡄⠀⠀⣷⣄⣄⣁⣶⣀⣠⣤⢊⡎⢂⢴⡄⠈⠏⠘⣰⢨⣿⣿⣿⣧⣿⡀⠸⣧⡁⢎⠆⢳⠐⣦⣴⣾⣿⣿⣿⣿⣿⡿⠈⢇⣸⣿⣿⣿⣿⣿⣿
-⣿⣿⣾⣄⢳⠁⡇⠈⢧⢢⠈⠦⣩⣶⣾⣻⣿⣿⣿⣿⣿⣍⣁⢸⠃⣘⠕⣱⡿⠀⣴⣯⣾⣿⣿⣿⣿⣿⣿⣇⠀⢥⣀⠈⢘⠀⠻⠿⣻⣿⣶⣷⡿⠛⣵⣶⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣷⣴⡗⠤⢁⠁⢘⣿⣿⣿⣿⠛⢿⣿⣿⣿⣿⡿⠈⠁⠁⠚⡡⢰⣼⣿⣿⣿⣋⠻⢀⡜⢿⣿⣿⣷⠤⠉⢤⠈⠠⠙⢿⣦⡀⢩⡍⣒⣛⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣧⠹⢠⢠⡻⢿⣿⣿⣿⣿⣿⣿⠟⡫⢰⣷⣈⠀⠠⢁⠻⣿⣿⣿⣿⣿⡇⢠⡿⢸⣿⠋⣠⣾⡟⢔⠀⣰⢠⢘⡛⢿⣘⠛⡓⡢⣐⠔⠜⢿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⠟⣋⣭⢑⡚⠿⢿⣷⣮⣭⡛⠛⣩⣶⣿⡇⣿⣿⣿⡘⠄⠙⠇⣛⣛⠛⠻⠟⢈⣚⣡⣼⣿⢰⣿⣿⣿⣦⡁⢷⣗⣮⡐⠐⢶⣿⣈⠒⠒⠁⣩⡓⣝⢿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⠃⣾⣿⣿⠷⣿⣿⣶⣮⣉⠩⢤⣾⣿⣿⣿⣇⠻⠿⢿⢿⣷⡦⠠⢈⠉⣁⣐⣤⣿⣿⣿⣿⡿⠸⢿⠿⢿⡇⣿⣌⠻⢷⣹⢀⠀⡉⢿⣷⣄⠱⡎⡙⠪⠇⢉⢻⣿⣿
-⣿⣿⣿⣿⢇⣼⡿⢛⣱⣿⣿⣿⣿⣿⣿⣿⣶⣤⣿⣯⣿⣿⣶⣶⣶⢰⢀⣴⣶⣶⡌⢿⣿⣿⣿⣿⣿⣿⠃⠊⣍⣭⡀⠠⡙⢁⡴⢗⢶⡄⡷⢁⢸⣿⣿⣷⣦⡙⠻⠿⡫⢸⣿⣿
-⣿⣿⣿⣿⢸⢋⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢸⢸⡏⣿⣿⣿⠸⣿⣿⣿⣿⣿⣿⣷⣄⢸⠿⣛⡃⠌⠔⣚⠳⢛⠃⠶⣿⡎⠿⠿⢿⡛⢥⣷⣌⢵⢸⣿⣿
-⣿⣿⣿⡇⡃⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣋⣽⣿⣿⣿⣿⣿⢸⢸⠃⡼⢟⠩⠬⡛⠿⣿⣿⣿⣿⣿⢟⣴⣿⣷⡾⢠⣿⣿⣿⡖⢡⣶⣾⣿⣿⣿⣿⣿⣿⣿⠟⡄⢸⣿⣿
-⣿⣿⣿⠃⡇⠿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⢏⣴⣿⣿⣿⣿⣿⣿⣿⡟⡇⠃⣭⣤⠮⠤⢨⣵⡜⢿⣿⣿⣧⠺⣿⡖⠂⣡⣿⣿⣿⡿⢡⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡾⢠⢸⣿⣿
-⣿⣿⣿⢸⣇⢙⠛⢿⣿⣿⣷⣶⣭⣙⡛⠃⢾⣿⣿⣿⣿⣿⣿⣿⣿⢧⣧⠶⢹⣯⡍⠛⣿⣿⣿⣦⡜⣿⣿⣧⠛⠁⢰⣿⣿⣿⢟⠄⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁⣺⢸⣿⣿
-⡿⢡⠖⢈⡵⠈⣾⣷⣿⣿⣿⣿⣿⣿⣿⣷⣦⣘⠩⢝⣛⣛⣛⣛⣫⣼⣿⢠⣭⣭⢩⡉⠿⣿⣿⣿⣿⠸⠟⢋⣀⣔⣒⣂⠉⠠⠉⠀⡛⠿⣿⣿⣿⣿⣿⡿⣻⡿⢃⡆⣃⣼⣿⣿
-⣷⣤⣤⢩⣶⣷⡹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣿⣿⣿⣿⣿⣿⣿⡎⣸⡟⣼⣿⢇⣬⡝⠋⡡⢔⡾⢋⢀⣭⡿⠽⣷⣤⣿⡷⢶⣤⣀⠙⢻⡿⠋⠴⣛⣡⣵⣾⣿⣿⣿⣿
-⣿⣿⣿⢸⣿⣿⣇⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢣⡿⠃⣫⣴⠟⠉⡠⣪⠞⣡⣾⠹⠈⠁⣴⣿⣿⣿⡟⢻⣶⡌⢀⣷⣄⠐⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⢸⣿⣿⣿⢰⡝⠛⢿⣿⣿⣿⣿⣷⡨⢿⣿⣿⣿⣿⣿⣿⣿⡿⢁⣩⣶⣿⠋⠀⡠⢪⣾⢋⣾⡿⢋⠔⡄⣰⠙⡻⠟⣽⣷⠀⡏⡄⣱⠹⣿⣆⠈⢻⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⢸⡿⣱⣶⡔⠶⠮⠍⣙⠿⠿⣿⣿⣿⣤⣬⣝⣛⠛⣛⠛⠉⣴⣿⣿⣿⢁⡎⡐⢠⡿⢡⡿⠻⠱⡏⡼⢰⣵⢨⡹⡀⠐⢆⡆⣧⣴⣿⣧⢻⣿⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⢸⣵⣿⣿⡇⢱⣿⣿⣶⣮⣥⣒⣪⠭⠭⣽⣿⣿⣿⠖⠙⢰⣿⣿⣿⣿⠜⢀⢡⡟⢀⣾⢣⠁⠃⠰⠇⣾⡇⣾⣿⡇⡸⣿⡇⢿⣿⣿⣿⡸⣿⡇⠀⢸⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⢸⣿⣿⣿⡇⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣮⣭⣛⡻⢷⢀⣛⣛⣛⣁⣠⡎⠌⠈⠸⡿⠀⠀⠄⢳⢀⢻⡇⢫⠿⠁⢵⣹⣷⢸⣿⣿⡿⢸⣿⡷⠀⣸⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⢸⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣦⡈⢿⣿⣿⣿⣿⣧⣸⡀⠐⣿⠀⢠⡄⡈⢠⠸⡇⠀⠓⡀⢲⢪⢽⠸⣿⡟⠇⠸⣿⡇⡇⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⡌⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡜⣿⣿⣿⣿⣿⣿⣇⣶⠘⠀⢣⣅⣀⢨⣆⡀⠄⠀⠃⠊⠀⢸⢀⡙⡑⠀⡰⠟⠈⢰⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⡇⣿⣿⣿⣧⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⢸⣿⣿⣿⣿⣿⠿⠡⠘⠰⣦⣿⣿⣹⣿⣿⣿⣝⣀⣀⣀⠀⠀⠐⡀⣦⣱⢸⠀⢿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣇⣟⡻⠿⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢟⣋⣭⣭⣭⣭⣭⡝⢋⣶⣿⣼⣄⣤⡙⢿⣿⢈⡭⢻⣿⣿⣯⡟⠡⡎⣐⠣⢃⡟⠀⢁⠆⣾⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣶⣯⣝⣻⣿⣿⣿⣿⣿⠠⣙⣛⠋⢵⣾⣿⣿⣿⣿⣿⢏⡟⣡⣿⣿⣿⣿⣿⡸⢟⠠⠙⢷⣵⡿⠿⠟⣛⠃⢀⣁⣐⠀⣉⣤⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢃⠌⢉⡍⠃⠄⡲⢮⢹⣿⢇⡾⢀⣿⡏⣼⣿⣿⣿⠇⠘⢀⣔⣶⣶⣿⣿⡄⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⣫⣶⡁⠆⡎⠰⠎⠐⠸⢸⡆⠟⣾⢱⣾⢟⣵⣿⣿⣿⠏⡴⠀⡹⣿⣿⣿⣿⣿⠿⢘⢂⣴⣶⣶⣍⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⡿⣋⣥⣶⣾⣿⣿⣿⣷⡄⠁⣿⡎⣆⢡⢊⠛⢂⣥⣵⣶⣿⣿⣿⣿⣷⣶⣍⠀⢱⣮⣽⣿⣶⣶⠇⡎⣼⣿⣿⣿⣿⣿⣦⡙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⠟⣡⣾⣿⣿⣿⣿⣿⣿⠿⠿⣟⣛⣯⡅⣿⣄⡆⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⣼⢱⠿⢿⣿⣿⣿⣿⣿⣿⣶⣌⡻⠿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⡿⢛⣵⣾⣿⣿⣿⠟⣫⣭⣶⣶⣿⣿⣿⣿⣿⣇⢿⣿⡸⠜⣿⣿⣿⣿⣿⣿⣿⣿⣿⢟⣽⣿⣿⣿⣿⣿⡿⣸⢇⣏⢚⣤⣌⡙⠿⣟⣿⣿⣿⣿⣿⣷⣶⠭⢝⣛⠿⣿⣿
-⣿⣿⣿⣿⣇⣛⣯⣭⣵⣶⡸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠸⣿⡇⣧⣜⢿⣿⣿⣿⣿⣿⡟⣵⣿⣿⣿⣿⣿⣿⡿⢱⣵⢸⣿⡜⣿⣿⣿⣷⣶⣭⣛⠿⠿⢟⣫⣴⣿⣿⣿⣶⣎⢿
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣭⣭⣽⣟⣛⣛⣿⣿⣛⣿⣇⡙⠿⡜⢿⣷⣝⠿⣿⣿⡏⣾⣿⣿⣿⣿⣿⣿⠟⣁⣡⡎⢸⠿⣣⢠⢶⣭⣝⣛⡛⣛⣥⣶⣿⣿⣿⣿⣿⣿⡿⢋⣼
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⣷⣬⣛⣳⠄⠍⠘⠻⠿⠿⢿⣛⣫⣥⣴⣾⣿⣷⠌⡈⡰⢣⠏⣿⢿⣿⣿⣿⡿⠿⠿⠿⢿⣟⣛⣭⣶⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣶⣶⣯⣭⣭⣭⣵⣶⣶⣷⣶⣦⣋⡚⢅⣢⣭⣥⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-`
-            },
-            {
-                ratio: "2:3", 
-                art: `
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠛⢛⡛⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⡿⠛⣥⣶⣾⣿⣇⠄⣀⢿⣧⣦⡈⠙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⡟⡛⠋⣴⣿⣿⣿⣿⣿⡟⠁⢈⠠⡙⠟⢡⠀⠀⡈⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⡿⢉⠀⠁⢿⣿⣿⢋⡽⢫⠞⣣⣿⢂⠀⢘⠪⠄⠆⠎⢠⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⡿⠀⠆⠡⠉⠲⣍⠃⡾⣰⢃⣼⠟⡱⠁⡀⣾⢱⡆⣤⠀⡇⣇⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⠃⢰⢈⢢⠀⢰⡏⡼⢱⠃⠞⠋⠐⢀⢁⠁⡟⣿⢱⢿⠘⡇⠘⠸⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⠈⡀⢾⠀⢆⢣⢀⡄⡏⠈⢀⠁⣀⡚⢸⢠⠃⠋⢸⠈⢀⠄⠀⢨⣼⣿⠿⠛⠉⠉⠉⠉⠉⠙⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⡇⡆⡇⣿⡇⣈⠀⣼⢸⠘⠀⠛⠐⡻⣷⠀⢸⠉⠆⡀⠂⢸⠀⠄⢀⠟⠁⣀⠄⣠⡴⠀⠀⡄⠀⠀⠀⠊⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⠀⠁⡇⡟⡸⠃⠀⡇⡄⠠⢄⡄⣰⡈⣿⣇⣌⢀⠀⠀⠂⠎⠀⠀⠀⢠⢃⣮⡾⢟⡵⢊⡀⠀⡀⡐⠒⠀⠀⠘⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⢰⢠⣇⠰⠑⠑⠲⡇⠇⣧⣔⣺⣿⣿⣿⣿⣿⠁⡠⣰⠄⠀⡀⠀⠀⡆⣾⠋⠠⡿⢁⡾⢁⠸⣿⢸⢰⡇⢠⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⢸⢸⡿⠀⡄⠀⠀⠀⢿⣿⣿⣿⣿⣿⣿⣿⣯⣴⣮⡕⠁⠀⠀⠀⢸⠘⡑⠂⡀⠀⠘⢀⠀⢲⡏⡄⢸⡇⠘⠀⠀⡆⠆⠈⢛⠛⣛⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⠀⢸⡇⠀⢡⠀⠀⠀⢨⠻⣿⣿⠿⣿⣿⣿⣿⣿⠏⠀⠀⠀⡀⠀⠏⠀⠀⢸⠃⠀⣀⡋⠀⣾⢠⠁⠎⠀⠀⠀⠀⣾⣿⣿⠿⡈⠼⡧⣳⡌⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣧⣈⠃⠀⠃⠀⢢⠀⠘⢎⣮⣛⠷⠶⠟⠛⠉⠁⠀⠀⡀⠀⢇⢀⠀⠈⣿⠸⢀⠚⠙⠃⡇⠁⠀⠀⠀⠀⠀⠀⢀⣾⡟⡵⢋⡼⡁⣴⣥⢮⢆⠌⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⣿⣿⣿⣿⡿⠆⠘⡇⠨⣂⠀⢴⣭⠻⢐⠦⠀⠀⢁⠀⠀⠀⠠⠀⠀⠀⠀⠣⠞⠁⢰⣤⣤⣶⣧⣄⡀⠀⠀⠀⠀⠀⢨⢏⡞⣤⠟⠄⢰⣿⡏⣿⢻⡜⠘⣛⠛⡻⠋⠙⣿⣿⣿⣿
-⣿⡿⣫⣷⣞⠻⣤⡘⠄⠪⠃⠛⢋⠈⠇⠁⢇⠠⠾⠆⠀⢠⡎⢀⡄⠀⠀⠀⢀⠀⣾⣿⣿⣿⣿⣿⣷⣶⡞⠀⠀⠀⡜⡼⡰⠁⢀⡚⢼⢏⠁⢣⢸⠇⠃⣿⣿⣿⣦⣄⠸⢿⣿⣿
-⣿⣬⢾⣿⣿⣿⣮⡻⣦⣄⣹⢸⣗⣀⡄⠀⠀⢒⠄⡀⠁⢿⣿⣿⣷⡀⡀⠀⡘⠀⠙⢿⣟⠻⣿⣿⡿⠟⠀⠀⠀⠀⠂⢃⠀⠀⠉⠁⢸⠏⡆⡈⠸⠀⠀⣽⠟⣫⣽⢿⡄⡀⢙⣿
-⣿⢣⣿⣿⣿⣿⣿⣷⡹⣿⣿⣇⠉⠋⣼⠔⠀⣐⠌⠃⣾⣎⣿⡿⠿⣛⣘⠓⣸⣆⡨⠱⢉⠫⣉⣁⣐⠀⠀⠀⠀⠰⠀⠀⣧⣉⣾⣶⡈⡐⠁⠀⠀⠀⢠⡔⣿⡏⢓⣫⠎⡄⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣷⢹⣿⣿⣷⢳⠏⢀⣾⠀⣀⠶⡎⡋⢨⢴⣛⢿⣿⣷⣮⡻⠁⠈⠄⡀⡻⢿⣿⠀⠈⠀⠸⠂⠀⢦⣿⣿⣿⣿⣿⣧⡶⠁⠀⠀⡭⠅⠸⠃⠈⡅⠀⡀⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⢰⢎⣿⣿⣿⣦⣤⣭⣤⣵⣎⢤⣶⣷⣔⢿⣿⣦⢻⣿⣿⣿⣿⣷⡌⠀⢿⣷⣤⠀⠘⠃⢐⠊⡀⢡⣙⢧⣊⣽⠿⢟⡁⠀⢰⠸⣀⣀⣄⣿⡿⠋⢃⢰⣿⣿
-⣿⣿⣿⣿⣿⣿⣧⢻⡀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣷⠈⣿⣿⣿⣧⢻⣿⣆⢿⣿⣿⣿⣿⣷⠀⠈⢿⣿⠀⡄⣌⠛⢷⣦⡊⢿⠑⢶⣾⣿⣿⠇⠀⡸⢠⣿⣿⣿⣿⡷⠁⢀⣾⣿⣿
-⣿⣿⡿⣿⣿⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣿⡏⠰⢻⣿⣿⣿⣿⣧⠀⠈⡟⠂⢣⣦⠻⣦⣉⠻⠶⣅⠔⣤⡍⠛⢐⠦⡅⢑⠍⠻⣙⠉⠀⠗⣼⣿⣿⣿
-⣿⣯⣷⣭⣟⣻⣿⣿⢿⣿⣿⠟⣻⣿⣿⣿⣿⡿⣿⡏⣜⢿⣿⣿⡇⣿⠋⣰⣿⣿⣿⣿⣿⣿⡄⣠⢸⣿⣧⢹⢇⣦⣙⣿⣶⣤⡀⠘⠁⡶⠱⣅⠀⠒⣐⠁⠙⢠⠀⠀⣿⣿⣿⣿
-⣏⣕⣒⣋⣉⡛⠻⠿⢸⣿⣯⡿⣿⣿⣿⣿⢟⣼⣇⣥⡿⣮⢻⡟⣸⡿⢠⣿⣿⣿⣿⣿⣿⣿⡏⡮⠘⣿⡿⠃⠙⣻⣿⣿⣿⣿⡏⢀⠀⠀⠀⢇⠆⠀⠀⠁⡄⠀⠈⢂⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⢀⢿⡽⣻⣿⣿⣿⣿⣿⢟⣾⣿⡟⢪⠺⣎⣅⢅⢯⢁⠚⣫⣵⣿⣿⣟⣼⣿⡇⠰⠃⢿⣿⠁⢤⣿⣿⣿⢣⢸⢣⢠⣀⠁⡀⣠⢠⡶⡄⡁⠀⠀⠀⠄⢻⣿⣿⣿
-⣿⣿⣿⣿⣿⣯⣬⣘⠿⠿⣿⣿⣿⣿⣧⠿⠿⠟⣱⡯⢢⠍⢸⢪⠊⡸⡰⡉⠍⣟⣡⣿⣿⣿⡇⠀⠀⣾⢿⡔⡜⣿⣿⡟⡜⢢⢣⣿⣿⠀⡇⢸⣧⢓⣼⣿⠦⡀⠑⠀⣾⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣱⣿⢆⠅⠍⠈⠀⠄⠑⠕⡴⢤⡿⣿⣿⣿⡏⠀⠀⠀⣿⣮⠃⣷⢻⠏⠬⠥⡛⣿⠻⣿⠀⡇⢸⠿⠈⠻⣥⠞⡹⢀⠀⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⡟⠛⠛⠁⠊⡞⠀⠀⢨⢀⣀⠇⡿⢋⣵⣿⢿⡟⣱⣆⠲⢀⣿⢿⢨⣬⡌⣾⢓⢦⠳⠙⣷⣿⣿⣿⣿⢄⣄⠂⣀⣘⣱⠈⢀⢿⠿⣿⣿
-⣯⣝⣛⣻⣛⣛⣛⠛⠛⠉⠉⠁⢀⠀⠀⠠⠀⡀⡊⠴⢁⠀⠀⠁⠂⢩⠰⢷⣿⣿⡷⢿⡊⣻⣿⠀⣿⣿⣷⠜⣛⡛⣻⣬⣵⣧⣶⣯⣿⣿⣿⣿⢨⣶⡿⠿⢿⣿⢔⠂⠀⠂⢹⣿
-⣿⣿⣿⣿⣿⠟⠁⡂⡠⠤⢢⠤⣄⠄⢀⠂⢀⠈⠀⠠⡍⠀⡘⠀⢀⢸⠀⣶⣄⡀⠀⠀⠀⠀⠀⢀⠉⡉⠉⢠⡁⣟⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⢍⣤⣤⣔⠠⠂⠤⠀⠀⢼⣿
-⣿⣿⣿⣿⠋⠀⠊⠠⠄⠀⡠⠄⠐⢬⡂⢀⡻⢱⠂⠀⠀⠀⠁⠀⠂⠘⠐⢸⣿⣿⣷⣤⣀⡀⢔⣒⣤⣴⢖⢜⢳⡙⣻⣭⣭⣭⣉⡹⡛⢛⣿⠿⠇⣚⡛⣼⣿⣷⠀⢂⠂⡀⡌⢿
-⣿⣿⡿⠁⢀⠀⠂⣠⢀⠐⠈⢀⢢⠀⠉⢦⢅⢆⡇⠇⢰⣷⣦⡀⠀⢠⢠⠀⠈⠙⠻⢿⣿⣿⣿⣿⣿⣏⢎⠆⠘⣹⣎⡉⠉⢉⣩⢄⡅⠿⢿⢑⡀⠿⠇⠘⡇⡜⡞⡄⠘⡱⠈⢼
-⣿⣿⠁⠰⢁⢀⠀⠠⡇⠁⡠⠂⠃⠀⡄⠠⢡⠾⠣⠀⢸⡿⠿⡃⠀⢸⡘⡄⢠⣴⢰⣶⠆⠀⠭⢉⠄⠙⠎⠀⠀⠀⠉⠉⠚⠋⢁⡫⢖⠀⠀⠘⠿⠃⠀⠀⠌⠸⣀⠀⢁⢰⣾⢸
-⣿⠇⠀⢁⡆⠨⡀⡄⠀⢆⠘⡥⡀⠙⣀⢣⣿⡿⣡⣷⣾⣿⣿⡇⠀⠘⠛⠁⠀⠐⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠩⠥⠈⠀⢀⠀⠐⠁⠀⠀⢀⣉⠐⠄⣐⡒⣸
-⡟⢐⠀⠚⢸⠐⢣⢀⠌⠈⢀⡈⢟⡄⣰⣁⠙⡰⠿⠿⠿⠟⠋⡀⠄⢀⠀⠀⠀⠀⠀⠄⠀⣼⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠂⠀⡀⠀⠀⠀⠀⠀⠀⠀⢸⣿⢀⠠⡑⢇⣿
-⡇⣤⠘⠐⠆⠀⠻⠧⠃⠀⠸⣣⢈⡄⢛⣵⣿⣿⣆⣀⣶⣿⡇⡀⠀⠰⠀⠀⠀⠀⠀⢀⠶⠍⠂⡀⠀⡀⠄⠀⠀⠀⠀⠀⠀⠀⢀⡠⠬⢒⠁⠀⠀⠀⠀⠀⠀⠸⡿⠘⢷⢌⣾⣿
-⣠⣛⢀⡇⠀⠄⠈⣠⡔⠗⠐⢁⣭⣿⣎⢿⣿⣿⣿⣿⣿⡟⣴⡇⠠⢐⠀⠀⠀⠀⠔⠄⠁⢰⣤⡄⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⢂⠀⢈⡀⠀⠀⠀⢠⣿⡆⡌⣢⣾⣿⣿
-⣿⠛⢸⣷⠈⢠⡆⡡⠽⢈⣴⣿⣿⣿⣿⣎⢿⣿⣿⣿⢏⣾⣿⣿⠀⡁⠀⠀⢠⡄⠀⠀⠀⠸⣿⣿⠏⠀⠀⠀⠀⠀⠀⠀⣠⣆⢿⣿⢃⣼⡆⠀⠀⠀⣀⢀⡜⡟⣰⡇⣿⣿⣿⣿
-⣿⠶⢸⢻⢰⢋⠢⣪⣶⣿⣿⣿⣿⣿⣿⣿⡎⣿⡿⣣⣾⣿⣿⣿⡄⠃⠀⠸⠃⠈⠀⠀⠀⠀⠻⢏⣴⣄⠀⠀⠀⠀⠀⣤⣿⣿⡜⣱⣿⣿⣿⡆⢤⠀⣠⣾⣇⣼⣿⡇⣿⣿⣿⣿
-⣿⣤⠸⠿⢔⢅⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡰⣾⣿⣿⣿⣿⣿⡇⠀⠡⢀⣀⣒⣷⣤⣄⣀⠀⠀⠀⠀⠀⠀⢀⣤⣴⣿⣿⣿⣧⢿⣿⣿⣿⣇⣠⣾⣿⣿⣷⢹⣿⡇⣿⣿⣿⣿
-⠾⠐⢂⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢿⣿⣿⣿⣿⣿⡇⢃⣴⣿⣿⣿⣿⣿⣿⣿⡇⢾⣿⣿⠀⢸⣿⣿⣿⣿⣿⣿⣿⢸⣿⣿⣿⣿⢸⣿⣿⣿⣿⣸⣿⡇⣿⣿⣿⣿
-⣤⣤⡀⠈⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡸⣿⣿⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢸⣿⣿⠀⢸⣿⣿⣿⣿⣿⣿⣿⣾⣿⣿⣿⣿⣼⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿⣿
-⣿⣿⣿⣿⡎⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠸⣿⣿⠀⢸⣿⣿⣿⣿⣿⣿⣿⡿⣿⣿⣿⣿⡇⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿⣿
-⣿⣿⣿⣿⣿⡜⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢸⣿⣿⣿⣿⣇⢹⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣿⣿⠀⢸⣿⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿⣿⣇⣿⣿⣿⣿⣿⣿⣇⣿⣿⣿⣿
-`
+        // Submit Handler
+        terminal.querySelector('#waifu-submit').onclick = (e) => {
+            e.stopPropagation();
+            const art = terminal.querySelector('#waifu-art').value;
+            const ratio = terminal.querySelector('#waifu-ratio').value;
+            const color = terminal.querySelector('#waifu-color').value;
+
+            if (!art.trim()) {
+                alert("ERROR: NULL_INPUT_DETECTED");
+                return;
             }
-        ];
-        
-        const selected = waifus[Math.floor(Math.random() * waifus.length)];
-        const waifuArt = selected.art;
-        
-        pre.innerText = waifuArt;
-        container.appendChild(pre);
-        
-        // Auto-scale Logic
-        const scaleArt = () => {
-            // Get art dimensions (approximate char width/height ratio 0.6)
-            const lines = waifuArt.split('\n');
-            const artHeight = lines.length;
-            const artWidth = lines.reduce((max, line) => Math.max(max, line.length), 0);
+
+            cleanUpInput();
+            renderWaifu(art, ratio, color);
+        };
+
+        // Prevent clicks inside terminal from bubbling (just in case we add container click later or for safety)
+        terminal.onclick = (e) => {
+            e.stopPropagation();
+        };
+
+        // 2. Rendering Logic (Moved into a closure function)
+        const renderWaifu = (artStr, ratioStr, colorStr) => {
+            container.style.backgroundColor = '#000000'; // Ensure dark bg
             
-            // Available screen size (with padding)
-            const screenW = window.innerWidth * 0.9;
-            const screenH = window.innerHeight * 0.9;
+            const pre = document.createElement('pre');
+            pre.style.position = 'absolute';
+            pre.style.top = '50%';
+            pre.style.left = '50%';
+            pre.style.transformOrigin = 'center center'; 
+            pre.style.fontSize = (10 * cfg.scale) + 'px'; 
+            pre.style.lineHeight = (10 * cfg.scale) + 'px'; 
+            pre.style.fontFamily = 'monospace';
+            pre.style.transition = 'opacity 1s ease-out';
+            pre.style.opacity = '0';
+            pre.style.userSelect = 'none';
+            pre.style.color = colorStr;
+            pre.innerText = artStr;
             
-            // Calculate scale to fit (assuming 10px font size)
-            // Char width approx 6px, height 10px
-            const charW = 6; 
-            const charH = 10;
-            
-            // Determine Aspect Ratio Correction
-            let scaleYCorrection = 1;
-            if (selected.ratio) {
-                const parts = selected.ratio.split(':');
-                if (parts.length === 2) {
-                     const rW = parseFloat(parts[0]);
-                     const rH = parseFloat(parts[1]);
-                     if (rW && rH) {
-                         const targetRatio = rW / rH;
-                         // Current visual ratio (width / height)
-                         const currentRatio = (artWidth * charW) / (artHeight * charH);
-                         // scaleYCorrection = currentRatio / targetRatio
-                         scaleYCorrection = currentRatio / targetRatio;
-                     }
+            container.appendChild(pre);
+
+            // Auto-scale Logic
+            const scaleArt = () => {
+                const lines = artStr.split('\n');
+                const artHeight = lines.length;
+                const artWidth = lines.reduce((max, line) => Math.max(max, line.length), 0);
+                
+                const screenW = window.innerWidth * 0.9;
+                const screenH = window.innerHeight * 0.9;
+                
+                const charW = 6; 
+                const charH = 10;
+                
+                let scaleYCorrection = 1;
+                if (ratioStr) {
+                    const parts = ratioStr.split(':');
+                    if (parts.length === 2) {
+                         const rW = parseFloat(parts[0]);
+                         const rH = parseFloat(parts[1]);
+                         if (rW && rH) {
+                             const targetRatio = rW / rH;
+                             // Current visual ratio (width / height)
+                             const currentRatio = (artWidth * charW) / (artHeight * charH);
+                             // scaleYCorrection = currentRatio / targetRatio
+                             scaleYCorrection = currentRatio / targetRatio;
+                         }
+                    }
                 }
-            }
 
-            const scaleX = screenW / (artWidth * charW);
-            const scaleY = screenH / (artHeight * charH * scaleYCorrection);
-            const scale = Math.min(scaleX, scaleY); // Fit contain
+                const scaleX = screenW / (artWidth * charW);
+                const scaleY = screenH / (artHeight * charH * scaleYCorrection);
+                const scale = Math.min(scaleX, scaleY); // Fit contain
+                
+                pre.style.transform = `translate(-50%, -50%) scale(${scale}, ${scale * scaleYCorrection})`;
+            };
+
+            requestAnimationFrame(() => {
+                scaleArt();
+                pre.style.opacity = '1';
+            });
             
-            pre.style.transform = `translate(-50%, -50%) scale(${scale}, ${scale * scaleYCorrection})`;
-        };
-
-        // Initial scale
-        requestAnimationFrame(() => {
-            scaleArt();
-            pre.style.opacity = '1';
-        });
-        
-        // Update on resize
-        window.addEventListener('resize', scaleArt);
-        
-        // Custom cleanup hook
-        const cleanup = () => {
-             window.removeEventListener('resize', scaleArt);
-             // Cleanup observer removed
-
-             fadeOutAndRemove(0);
-        };
-        
-        // Close controls
-        container.onclick = cleanup;
-        
-        // Close Button
-        const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = getIcon('close', 'w-8 h-8');
-        closeBtn.className = 'fixed top-8 right-8 z-[10001] p-3 bg-white/10 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-all duration-300 opacity-0 group-hover:opacity-100';
-        if (typeof isMobile === 'function' && isMobile()) closeBtn.style.display = 'none';
-        
-        const btnContainer = document.createElement('div');
-        btnContainer.className = 'absolute inset-0 pointer-events-none group';
-        btnContainer.appendChild(closeBtn);
-        container.appendChild(btnContainer);
-        
-        closeBtn.style.pointerEvents = 'auto';
-        closeBtn.onclick = (e) => {
-             e.stopPropagation();
-             cleanup();
+            window.addEventListener('resize', scaleArt);
+            
+            const cleanup = () => {
+                 window.removeEventListener('resize', scaleArt);
+                 fadeOutAndRemove(0);
+            };
+            
+            // Auto-dismiss for waifu
+            if (cfg.autoDismiss) {
+                setTimeout(cleanup, cfg.duration);
+            }
+            
+            // Close controls
+            container.onclick = cleanup;
+            
+            // Close Button
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = getIcon('close', 'w-8 h-8');
+            closeBtn.className = 'fixed top-8 right-8 z-[10001] p-3 bg-white/10 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-all duration-300 opacity-0 group-hover:opacity-100';
+            if (typeof isMobile === 'function' && isMobile()) closeBtn.style.display = 'none';
+            
+            const btnContainer = document.createElement('div');
+            btnContainer.className = 'absolute inset-0 pointer-events-none group';
+            btnContainer.appendChild(closeBtn);
+            container.appendChild(btnContainer);
+            
+            closeBtn.style.pointerEvents = 'auto';
+            closeBtn.onclick = (e) => {
+                 e.stopPropagation();
+                 cleanup();
+            };
         };
 
     } else if (effect === 'ascii-tux') {
@@ -604,6 +767,16 @@ export function triggerConfetti(forcedEffect = null) {
         pre.style.transition = 'all 0.5s ease-out';
         pre.style.opacity = '0';
         if (document.documentElement.classList.contains('dark')) pre.style.color = '#fff';
+
+        // Responsive Scale Logic
+        let baseScale = 1.5;
+        const updateScale = () => {
+             const minDim = Math.min(window.innerWidth, window.innerHeight);
+             // Base scale 1.5 for 400px screen.
+             baseScale = Math.max(1.5, (minDim / 400) * 1.5) * cfg.scale; // Scale Config
+        };
+        window.addEventListener('resize', updateScale);
+        updateScale();
         
         const arts = {
             tux: {
@@ -719,7 +892,9 @@ export function triggerConfetti(forcedEffect = null) {
         container.appendChild(pre);
         
         requestAnimationFrame(() => {
-            pre.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            // Tux body is slightly left-heavy in ASCII, shift right to visually center
+            const xOffset = '15px';
+            pre.style.transform = `translate(calc(-50% + ${xOffset}), -50%) scale(${baseScale})`;
             pre.style.opacity = '1';
             
             const onMouseMove = (e) => {
@@ -738,7 +913,7 @@ export function triggerConfetti(forcedEffect = null) {
                 const dy = clientY - centerY;
                 const rotation = Math.max(-30, Math.min(30, dx / 20));
                 const lean = Math.max(-0.2, Math.min(0.2, dy / 500));
-                pre.style.transform = `translate(-50%, -50%) scale(${1.5 + lean}) rotate(${rotation}deg)`;
+                pre.style.transform = `translate(calc(-50% + ${xOffset}), -50%) scale(${baseScale + lean}) rotate(${rotation}deg)`;
             };
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('touchmove', onMouseMove, { passive: false });
@@ -747,20 +922,25 @@ export function triggerConfetti(forcedEffect = null) {
             const waddle = setInterval(() => {
                 const elapsed = Date.now() - startTime;
                 if (selectedArt.animator) {
-                    pre.innerText = selectedArt.animator(elapsed, baseFrame);
+                    pre.innerText = selectedArt.animator(elapsed * cfg.speed, baseFrame); // Speed Config
                 }
             }, 50);
             
-            setTimeout(() => {
-                clearInterval(waddle);
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('touchmove', onMouseMove);
-                pre.style.transition = 'all 0.5s ease-in';
-                pre.style.transform = 'translate(-50%, -50%) scale(0) rotate(720deg)';
-                pre.style.opacity = '0';
-            }, 4000);
+            if (cfg.autoDismiss) {
+                setTimeout(() => {
+                    clearInterval(waddle);
+                    window.removeEventListener('resize', updateScale);
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('touchmove', onMouseMove);
+                    pre.style.transition = 'all 0.5s ease-in';
+                    pre.style.transform = 'translate(-50%, -50%) scale(0) rotate(720deg)';
+                    pre.style.opacity = '0';
+                    fadeOutAndRemove(500); // Wait for transition
+                }, cfg.duration);
+            }
         });
-        fadeOutAndRemove(4500);
+        // Remove the outer fadeOutAndRemove since we handle it inside
+        // fadeOutAndRemove(cfg.duration + 500); 
     } else if (effect === 'retro-terminal') {
         container.style.background = '#000';
         container.style.color = '#0f0';
@@ -769,12 +949,12 @@ export function triggerConfetti(forcedEffect = null) {
         container.style.display = 'flex';
         container.style.alignItems = 'center';
         container.style.justifyContent = 'center';
-        container.style.fontSize = '24px';
+        container.style.fontSize = (24 * cfg.scale) + 'px'; // Scale Config
         container.innerText = '> SYSTEM COMPROMISED...\n> REBOOTING KERNEL...\n> LOADING...';
         
-        setTimeout(() => container.innerText += '\n> ACCESS GRANTED.', 1000);
-        setTimeout(() => container.innerText += '\n> JUST KIDDING :P', 2000);
-        fadeOutAndRemove(4000);
+        setTimeout(() => container.innerText += '\n> ACCESS GRANTED.', 1000 / cfg.speed);
+        setTimeout(() => container.innerText += '\n> JUST KIDDING :P', 2000 / cfg.speed);
+        fadeOutAndRemove(cfg.duration);
     } else if (effect === 'warp-speed') {
         container.style.pointerEvents = 'auto'; // Block interaction & Allow Long Press
         const canvas = document.createElement('canvas');
@@ -786,6 +966,15 @@ export function triggerConfetti(forcedEffect = null) {
         
         let cx = canvas.width / 2;
         let cy = canvas.height / 2;
+        
+        // Resize Handler
+        const onResize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            cx = canvas.width / 2;
+            cy = canvas.height / 2;
+        };
+        window.addEventListener('resize', onResize);
         
         class Star {
             constructor() {
@@ -871,6 +1060,11 @@ export function triggerConfetti(forcedEffect = null) {
         container.addEventListener('mouseleave', stopAccel);
 
         function animate() {
+            // Auto-detect resize (Robustness for mobile zoom)
+            if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+                onResize();
+            }
+
             // Clear trail
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -881,12 +1075,13 @@ export function triggerConfetti(forcedEffect = null) {
             
             // If fully stopped, exit
             if (isStopping && speed < 0.1) {
+                 window.removeEventListener('resize', onResize);
                  fadeOutAndRemove(0);
                  return; // Stop loop
             }
             
             stars.forEach(star => {
-                star.update(speed);
+                star.update(speed * cfg.speed); // Apply Speed Config
                 star.draw();
             });
             frame++;
@@ -899,6 +1094,14 @@ export function triggerConfetti(forcedEffect = null) {
         hint.className = "absolute bottom-10 left-0 right-0 text-center text-cyan-400 font-mono text-sm opacity-50 animate-pulse pointer-events-none select-none";
         hint.innerText = "HOLD TO WARP // RELEASE TO EXIT";
         container.appendChild(hint);
+        
+        // Auto remove for Warp Speed if autoDismiss is true (otherwise it waits for user interaction)
+        if (cfg.autoDismiss && cfg.duration > 0) {
+            setTimeout(() => {
+                isStopping = true;
+                targetSpeed = 0;
+            }, cfg.duration);
+        }
 
         return;
     } else if (effect === 'fireworks') {
@@ -907,6 +1110,14 @@ export function triggerConfetti(forcedEffect = null) {
         const canvas = document.createElement('canvas');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        
+        // Resize Handler
+        const onResize = () => {
+             canvas.width = window.innerWidth;
+             canvas.height = window.innerHeight;
+        };
+        window.addEventListener('resize', onResize);
+        
         container.appendChild(canvas);
         const ctx = canvas.getContext('2d');
         
@@ -961,7 +1172,7 @@ export function triggerConfetti(forcedEffect = null) {
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += 0.1; // Gravity
+                this.vy += 0.1 * cfg.gravity; // Gravity Config
                 this.vx *= 0.95; // Friction
                 this.vy *= 0.95;
                 this.life -= this.decay;
@@ -978,6 +1189,11 @@ export function triggerConfetti(forcedEffect = null) {
         }
         
         function animate() {
+            // Auto-detect resize
+            if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+                onResize();
+            }
+
             ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // Trails
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
@@ -999,8 +1215,13 @@ export function triggerConfetti(forcedEffect = null) {
         }
         animate();
         
-        // Auto-close after 8 seconds
-        setTimeout(() => fadeOutAndRemove(0), 8000);
+        // Auto-close after duration
+        if (cfg.autoDismiss) {
+            setTimeout(() => {
+                window.removeEventListener('resize', onResize);
+                fadeOutAndRemove(0);
+            }, cfg.duration);
+        }
         
         // Click to launch extra fireworks
         container.onclick = (e) => {
@@ -1020,43 +1241,96 @@ export function triggerConfetti(forcedEffect = null) {
         const canvas = document.createElement('canvas');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        
+        // Resize Handler
+        const onResize = () => {
+             canvas.width = window.innerWidth;
+             canvas.height = window.innerHeight;
+             // Ensure paddles stay within bounds
+             if (typeof playerY !== 'undefined') playerY = Math.min(playerY, canvas.height - 120);
+             if (typeof aiY !== 'undefined') aiY = Math.min(aiY, canvas.height - 120);
+             // Ensure ball stays within bounds
+             if (typeof ball !== 'undefined') {
+                if(ball.y > canvas.height) ball.y = canvas.height - ball.r;
+                if(ball.x > canvas.width) ball.x = canvas.width - ball.r;
+             }
+        };
+        window.addEventListener('resize', onResize);
+        
         container.style.pointerEvents = 'auto'; 
         container.style.cursor = 'none'; 
         container.appendChild(canvas);
         const ctx = canvas.getContext('2d');
         
-        let ball = { x: canvas.width/2, y: canvas.height/2, dx: 6, dy: 6, r: 15 };
+        let ball = { x: canvas.width/2, y: canvas.height/2, dx: 0, dy: 0, r: 15, speed: 0 };
         let playerY = canvas.height / 2 - 60;
+        let targetPlayerY = playerY; // For smooth interpolation
         let aiY = canvas.height / 2 - 60;
         let playerScore = 0;
         let aiScore = 0;
         let isPlayerActive = false;
+        let lastInteractionTime = Date.now();
         let gameOver = false;
         let autoCloseTimer = null;
         
+        // Game State: 'serve', 'playing', 'scored', 'gameover'
+        let gameState = 'serve'; 
+        let serveTimer = 0;
+        let serveDelay = 60; // Frames (approx 1 sec)
+        let server = 'player'; // Who serves next
+        
+        // Use relative movement for touch to prevent jumping
+        let lastTouchY = null;
+        
         const onMouseMove = (e) => {
             isPlayerActive = true;
-            let targetY = 0;
+            lastInteractionTime = Date.now();
+            
+            // Cancel any pending auto-close
+            if (autoCloseTimer) {
+                clearTimeout(autoCloseTimer);
+                autoCloseTimer = null;
+            }
+            
+            let targetYRaw = 0;
+            let isTouch = false;
             
             // Handle Touch
             if (e.touches && e.touches.length > 0) {
+                isTouch = true;
                 const touch = e.touches[0];
-                targetY = touch.clientY - 60;
+                const currentTouchY = touch.clientY;
                 
                 // Allow exiting by touching top corners
-                if (touch.clientY < 80 && (touch.clientX < 80 || touch.clientX > window.innerWidth - 80)) {
-                    // Let the event propagate to the close button
+                if (currentTouchY < 80 && (touch.clientX < 80 || touch.clientX > window.innerWidth - 80)) {
                     return; 
                 }
                 
-                e.preventDefault(); // Prevent scrolling during gameplay
+                e.preventDefault(); 
+                
+                // Relative Movement Logic
+                if (lastTouchY !== null) {
+                    const deltaY = currentTouchY - lastTouchY;
+                    targetPlayerY = playerY + deltaY;
+                } else {
+                    targetPlayerY = playerY;
+                }
+                
+                lastTouchY = currentTouchY;
+                
             } else {
                 // Handle Mouse
-                targetY = e.clientY - 60;
+                targetYRaw = e.clientY - 60;
+                targetPlayerY = Math.max(0, Math.min(canvas.height - 120, targetYRaw));
             }
+            
+            // Clamp target
+            targetPlayerY = Math.max(0, Math.min(canvas.height - 120, targetPlayerY));
 
-            playerY = Math.max(0, Math.min(canvas.height - 120, targetY));
-            if (autoCloseTimer) { clearTimeout(autoCloseTimer); autoCloseTimer = null; }
+            // Instant snap for touch
+            if (isTouch) {
+                playerY = targetPlayerY;
+            }
         };
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('touchmove', onMouseMove, { passive: false });
@@ -1064,6 +1338,7 @@ export function triggerConfetti(forcedEffect = null) {
         // Add double-tap to exit for mobile
         let lastTap = 0;
         const onTouchEnd = (e) => {
+            lastTouchY = null; // Reset touch tracker
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTap;
             if (tapLength < 500 && tapLength > 0) {
@@ -1072,20 +1347,85 @@ export function triggerConfetti(forcedEffect = null) {
             lastTap = currentTime;
         };
         document.addEventListener('touchend', onTouchEnd);
+        // Also reset on touchstart to be safe
+        const onTouchStart = (e) => {
+             if (e.touches.length > 0) {
+                 lastTouchY = e.touches[0].clientY;
+             }
+        };
+        document.addEventListener('touchstart', onTouchStart, { passive: false });
 
-        function resetBall() {
-            ball.x = canvas.width/2;
-            ball.y = canvas.height/2;
-            let dir = Math.random() > 0.5 ? 1 : -1;
-            ball.dx = dir * (6 + Math.random() * 2); 
-            ball.dy = (Math.random() - 0.5) * 8;
+        function resetBall(winner) {
+            gameState = 'serve';
+            serveTimer = 60; // 1 second delay
+            server = winner === 'ai' ? 'player' : 'ai'; // Loser serves? Or winner? Standard is winner serves or alternate. Let's do alternate or winner. Winner serves is standard.
+            
+            // Reset position
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx = 0;
+            ball.dy = 0;
+            
+            // Calculate base speed for next serve
+            // Slower start speed: 0.3% of width
+            // Min 3px, Max 8px
+            const baseSpeed = Math.max(3, Math.min(8, canvas.width * 0.003)) * cfg.speed;
+            ball.speed = baseSpeed;
+            
+            // Reset interaction time
+            lastInteractionTime = Date.now();
         }
         
+        // Initial launch
+        resetBall('player');
+        
+        function launchBall() {
+            gameState = 'playing';
+            // Direction based on server
+            let dirX = server === 'player' ? 1 : -1;
+            
+            // Randomize Y angle slightly, but keep X component strong
+            // Angle between -45 and 45 degrees
+            const angle = (Math.random() * Math.PI / 2) - (Math.PI / 4); 
+            
+            ball.dx = dirX * ball.speed * Math.cos(angle);
+            ball.dy = ball.speed * Math.sin(angle);
+        }
+
         function updatePhysics() {
             if (gameOver) return;
+            
+            // Smooth Paddle Movement
+            if (isPlayerActive) {
+                playerY += (targetPlayerY - playerY) * 0.2;
+                if (Math.abs(targetPlayerY - playerY) < 0.5) playerY = targetPlayerY;
+            }
+            
+            // Game State Logic
+            if (gameState === 'serve') {
+                serveTimer--;
+                if (serveTimer <= 0) {
+                    launchBall();
+                }
+                
+                // AI Tracking during serve (get ready)
+                let aiTarget = canvas.height/2 - 60;
+                aiY += (aiTarget - aiY) * 0.05;
+                return;
+            }
+            
+            if (gameState === 'scored') {
+                 // Wait for ball to go fully off screen or delay
+                 // Actually, if we are in 'scored', we usually transition to 'serve' immediately or after short delay
+                 // Logic handled in ball bounds check
+                 return;
+            }
+            
+            // Playing State
             ball.x += ball.dx;
             ball.y += ball.dy;
             
+            // Ceiling / Floor Bounce
             if (ball.y - ball.r < 0) {
                 ball.y = ball.r;
                 ball.dy = Math.abs(ball.dy);
@@ -1095,42 +1435,113 @@ export function triggerConfetti(forcedEffect = null) {
                 ball.dy = -Math.abs(ball.dy);
             }
             
-            if (ball.dx < 0 && ball.x - ball.r < 40 && ball.x + ball.r > 20 && ball.y + ball.r > playerY && ball.y - ball.r < playerY + 120) {
-                ball.dx = Math.abs(ball.dx) + 0.5;
-                ball.x = 40 + ball.r;
-                let hitPos = (ball.y - (playerY + 60)) / 60;
-                ball.dy += hitPos * 3;
+            // Paddle Collision (Player)
+            // Check AABB first
+            // Paddle: x=20, w=20, y=playerY, h=120
+            // Ball: x=ball.x, r=ball.r
+            if (ball.dx < 0) {
+                if (ball.x - ball.r < 40 && ball.x + ball.r > 20 && ball.y + ball.r > playerY && ball.y - ball.r < playerY + 120) {
+                    // Hit!
+                    // Calculate deflection angle based on hit position relative to center
+                    const hitPoint = ball.y - (playerY + 60);
+                    // Normalize hit point: -60 to 60 -> -1 to 1
+                    let normalizedHit = hitPoint / 60;
+                    
+                    // Max angle: 45 degrees (PI/4)
+                    const bounceAngle = normalizedHit * (Math.PI / 4);
+                    
+                    // Increase speed on hit (Aggressive acceleration)
+                    // Cap at ~3x initial speed or user config limit
+                    const maxSpeed = Math.max(15, Math.min(30, canvas.width * 0.02)) * cfg.speed;
+                    ball.speed = Math.min(ball.speed * 1.15, maxSpeed);
+                    
+                    ball.dx = ball.speed * Math.cos(bounceAngle);
+                    ball.dy = ball.speed * Math.sin(bounceAngle);
+                    
+                    // Ensure it moves right
+                    if (ball.dx < 0) ball.dx = -ball.dx;
+                    
+                    // Push out of collision
+                    ball.x = 40 + ball.r;
+                }
             }
             
-            if (ball.dx > 0 && ball.x + ball.r > canvas.width - 40 && ball.x - ball.r < canvas.width - 20 && ball.y + ball.r > aiY && ball.y - ball.r < aiY + 120) {
-                ball.dx = -(Math.abs(ball.dx) + 0.5);
-                ball.x = canvas.width - 40 - ball.r;
+            // Paddle Collision (AI)
+            // Paddle: x=width-40, w=20, y=aiY, h=120
+            if (ball.dx > 0) {
+                if (ball.x + ball.r > canvas.width - 40 && ball.x - ball.r < canvas.width - 20 && ball.y + ball.r > aiY && ball.y - ball.r < aiY + 120) {
+                    const hitPoint = ball.y - (aiY + 60);
+                    let normalizedHit = hitPoint / 60;
+                    const bounceAngle = normalizedHit * (Math.PI / 4);
+                    
+                    const maxSpeed = Math.max(15, Math.min(30, canvas.width * 0.02)) * cfg.speed;
+                    ball.speed = Math.min(ball.speed * 1.15, maxSpeed);
+                    
+                    ball.dx = -ball.speed * Math.cos(bounceAngle);
+                    ball.dy = ball.speed * Math.sin(bounceAngle);
+                    
+                    // Ensure it moves left
+                    if (ball.dx > 0) ball.dx = -ball.dx;
+                    
+                    ball.x = canvas.width - 40 - ball.r;
+                }
             }
             
-            if (ball.x < -20) {
+            // Scoring
+            // Allow ball to go fully off screen before resetting
+            if (ball.x < -ball.r * 2) {
                 aiScore++;
-                resetBall();
-            } else if (ball.x > canvas.width + 20) {
+                gameState = 'scored';
+                resetBall('ai'); // AI scored, AI serves (or player serves? Winner serves usually)
+            } else if (ball.x > canvas.width + ball.r * 2) {
                 playerScore++;
-                resetBall();
+                gameState = 'scored';
+                resetBall('player');
             }
             
+            // AI Logic
             let targetY = ball.y - 60;
-            aiY += (targetY - aiY) * 0.1;
+            // Introduce error/reaction delay for AI based on difficulty/speed
+            // Basic lerp
+            aiY += (targetY - aiY) * 0.08;
             aiY = Math.max(0, Math.min(canvas.height - 120, aiY));
             
             if (!isPlayerActive) {
+                // Auto-play / Demo Mode
                 let pTarget = ball.y - 60;
-                playerY += (pTarget - playerY) * 0.09;
-                playerY = Math.max(0, Math.min(canvas.height - 120, playerY));
+                targetPlayerY = Math.max(0, Math.min(canvas.height - 120, pTarget));
+                playerY += (targetPlayerY - playerY) * 0.08;
             }
         }
         
         function draw() {
+            // Check Auto Close logic
+            if (cfg.autoDismiss && !gameOver) {
+                // If user is holding finger down (static touch), update interaction time
+                if (lastTouchY !== null) {
+                    lastInteractionTime = Date.now();
+                }
+
+                // If inactive for duration, close
+                if (Date.now() - lastInteractionTime > cfg.duration) {
+                     if (!autoCloseTimer) { // Only trigger once
+                         autoCloseTimer = true; // Mark as triggering
+                         fadeOutAndRemove(0);
+                         return;
+                     }
+                }
+            }
+
+            // Auto-detect resize
+            if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+                onResize();
+            }
+
             updatePhysics();
             
             if (playerScore >= 3 || aiScore >= 3) {
                 gameOver = true;
+                gameState = 'gameover';
             }
             
             if (gameOver) {
@@ -1178,6 +1589,19 @@ export function triggerConfetti(forcedEffect = null) {
             ctx.textAlign = 'center';
             ctx.fillText("FIRST TO 3 WINS", canvas.width/2, 50);
             
+            // Draw "Get Ready" text if serving
+            if (gameState === 'serve') {
+                 ctx.fillStyle = '#fff';
+                 ctx.font = '30px monospace';
+                 ctx.fillText(server === 'player' ? "PLAYER SERVE" : "AI SERVE", canvas.width/2, canvas.height/2 - 80);
+                 
+                 // Draw countdown dots
+                 const dots = Math.ceil(serveTimer / 20);
+                 let dotStr = ".".repeat(dots);
+                 ctx.font = '40px monospace';
+                 ctx.fillText(dotStr, canvas.width/2, canvas.height/2 + 60);
+            }
+            
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
@@ -1197,15 +1621,15 @@ export function triggerConfetti(forcedEffect = null) {
         }
         draw();
         
-        autoCloseTimer = setTimeout(() => {
-            if (!gameOver) fadeOutAndRemove(0);
-        }, 10000);
+        // Removed fixed autoCloseTimer, relying on draw loop check
         
         const observer = new MutationObserver((mutations) => {
             if (!document.body.contains(container)) {
+                window.removeEventListener('resize', onResize);
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('touchmove', onMouseMove);
                 document.removeEventListener('touchend', onTouchEnd);
+                document.removeEventListener('touchstart', onTouchStart);
                 observer.disconnect();
                 gameOver = true;
             }
