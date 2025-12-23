@@ -4,7 +4,7 @@ import { detectLanguage, debounce } from './utils.js';
 import { getState, setState } from './state.js';
 import { renderApps, updateLanguage, updateSourceUI, updateHeaderIcon, updateFavicon, showToast, copySourceURL, handleDownloadClick, openModal, closeModal, collapseAllExpanded } from './ui.js';
 import { fetchSource, switchSource, toggleSource } from './data.js';
-import { handleEasterEgg, showDeveloperConsolePrompt } from './effects.js';
+import { handleEasterEgg, showDeveloperConsolePrompt, initCheatCodes } from './effects.js';
 
 // Expose functions to window for HTML event handlers
 window.handleDownloadClick = handleDownloadClick;
@@ -15,6 +15,9 @@ window.toggleSource = toggleSource;
 window.handleEasterEgg = handleEasterEgg;
 window.switchSource = switchSource;
 window.fetchSource = fetchSource;
+
+// Init Cheat Codes
+initCheatCodes();
 
 // Sort Logic
 function setSort(mode) {

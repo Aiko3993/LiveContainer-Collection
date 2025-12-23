@@ -247,7 +247,10 @@ export function updateCopyButtonUI(mode) {
         `;
     } else {
         wrapper.className = "flex items-center justify-center gap-1.5 transition-all duration-300 ease-out flex-shrink-0 min-w-[36px]";
-        let colorClass = mode === 'nsfw' ? 'text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/30' : 'text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30';
+        // Standard (or others) now gets colored by default (Emerald) instead of gray
+        let colorClass = mode === 'nsfw' 
+            ? 'text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-900/30' 
+            : 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30';
         
         wrapper.innerHTML = `<button onclick="window.copySourceURL('${mode}')" class="p-2 rounded-xl ${colorClass} transition-all active:scale-95" title="Copy Source URL">${getIcon('copy', 'w-5 h-5')}</button>`;
     }

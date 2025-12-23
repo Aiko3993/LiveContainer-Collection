@@ -31,6 +31,14 @@
             right: -10px;
             z-index: 10;
         }
+        @media (max-width: 768px) {
+            #status-dot-wrapper::after {
+                top: -20px;
+                bottom: -20px;
+                left: -20px;
+                right: -20px;
+            }
+        }
 
         /* Text Roll Animation - Slower and smoother */
         @keyframes text-roll {
@@ -71,7 +79,6 @@
                     <div class="flex items-center gap-4 min-w-0 flex-1">
                         <!-- Icon -->
                         <div class="relative group flex-shrink-0">
-                            <div class="absolute inset-0 bg-primary-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
                             <div id="source-icon" class="relative w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-inner flex-shrink-0 overflow-hidden transition-colors duration-500">
                                 <!-- Dynamic Icon Image -->
                                 <img id="dynamic-source-icon" class="w-full h-full object-cover hidden" alt="Source Icon">
@@ -201,7 +208,7 @@
             
             <!-- Maintainer -->
             <div class="flex items-center gap-1.5 whitespace-nowrap">
-                <span id="status-dot-wrapper" class="relative flex h-1.5 w-1.5 cursor-pointer select-none group items-center justify-center" onclick="handleEasterEgg()">
+                <span id="status-dot-wrapper" class="relative flex h-1.5 w-1.5 cursor-pointer select-none group items-center justify-center" onclick="handleEasterEgg()" style="touch-action: manipulation;">
                   <span id="status-dot-ping" class="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-green-400 group-hover:bg-yellow-400 opacity-75 transition-colors duration-300"></span>
                   <span id="status-dot-core" class="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500 group-hover:bg-yellow-500 transition-all duration-300"></span>
                 </span>
