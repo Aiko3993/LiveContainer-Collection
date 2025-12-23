@@ -225,13 +225,27 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
     app_entry = next((a for a in existing_source['apps'] 
                       if a.get('githubRepo') == repo and a.get('name') == name), None)
 
-    # Fallback for migration: if no exact match, try repo-only match if it's the only one
-    if not app_entry:
-        repo_matches = [a for a in existing_source['apps'] if a.get('githubRepo') == repo]
-        if len(repo_matches) == 1:
-            app_entry = repo_matches[0]
+    # Fallback for migration: if no exact match, try repo-only match IF this repo is only used once in apps.json
+    if not app_entry and apps_list_to_update is not None:
+        repo_usage_count = sum(1 for a in apps_list_to_update if a.get('github_repo') == repo)
+        if repo_usage_count == 1:
+            repo_matches = [a for a in existing_source['apps'] if a.get('githubRepo') == repo]
+            if len(repo_matches) == 1:
+                app_entry = repo_matches[0]
+                logger.info(f"Migration: Matched {name} to existing entry {app_entry.get('name')} via repo {repo}")
 
     found_icon_auto = None
+
+    # Find latest release
+    release = client.get_latest_release(
+        repo, 
+        prefer_pre_release=app_config.get('pre_release', False),
+        tag_regex=app_config.get('tag_regex')
+    )
+
+    if not release:
+        logger.warning(f"No release found for {name}")
+        return existing_source
 
     if app_entry:
         app_entry['githubRepo'] = repo 
@@ -293,16 +307,6 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
              if extracted: app_entry['tintColor'] = extracted
         
         app_entry.pop('permissions', None)
-    
-    release = client.get_latest_release(
-        repo, 
-        prefer_pre_release=app_config.get('pre_release', False),
-        tag_regex=app_config.get('tag_regex')
-    )
-
-    if not release:
-        logger.warning(f"No release found for {name}")
-        return existing_source
 
     # Find IPA
     ipa_asset = select_best_ipa(release.get('assets', []), app_config)
