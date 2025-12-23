@@ -272,11 +272,28 @@ def score_icon_path(path):
     elif 'assets/' in p: score += 20
     elif 'public/' in p: score += 10
     
-    # Filenames
-    name = os.path.basename(p)
-    if 'icon' in name: score += 30
-    elif 'logo' in name: score += 25
-    elif 'app' in name: score += 10
+    # Boost score for common icon names
+    icon_keywords = {
+        'appicon': 100,
+        'marketing': 80,
+        'tinted': 70,
+        '1024': 60,
+        'production': 50,
+        'icon': 30,
+        'logo': 20,
+        'rounded': 10
+    }
+    
+    name_lower = name.lower()
+    for kw, bonus in icon_keywords.items():
+        if kw in name_lower:
+            score += bonus
+            
+    # Priority paths (like xcassets)
+    if '.xcassets' in p:
+        score += 50
+    if '.appiconset' in p:
+        score += 50
     
     # Square/Resolution preference
     if 'square' in name: score += 20
