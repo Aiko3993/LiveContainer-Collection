@@ -394,7 +394,9 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
         app_entry['name'] = name 
         
         # Check if we can skip early based on download URL
-        if any(v.get('downloadURL') == download_url for v in app_entry.get('versions', [])):
+        is_nightly_link = any('nightly.link' in v.get('downloadURL', '') for v in app_entry.get('versions', []))
+        
+        if any(v.get('downloadURL') == download_url for v in app_entry.get('versions', [])) and not is_nightly_link:
              # Even if up to date, we might want to update some metadata from config
              config_icon = app_config.get('icon_url')
              if config_icon and config_icon not in ['None', '_No response_'] and app_entry.get('iconURL') != config_icon:
@@ -466,7 +468,7 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
     fd, temp_path = tempfile.mkstemp(suffix='.ipa')
     os.close(fd)
     
-    current_repo = os.environ.get('GITHUB_REPOSITORY')
+    current_repo = client.get_current_repo()
     upload_success = False
 
     try:
@@ -550,10 +552,12 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
                     else:
                         logger.error(f"nightly.link returned 404 for both {download_url} and {alt_url}")
 
-                with client.session.get(download_url, stream=True, timeout=300) as r:
-                    r.raise_for_status()
-                    # It's a ZIP from nightly.link
-                    with zipfile.ZipFile(BytesIO(r.content)) as z:
+                r = client.get(download_url, stream=True, timeout=300)
+                if not r:
+                    raise Exception(f"Failed to download from {download_url}")
+                
+                # It's a ZIP from nightly.link
+                with zipfile.ZipFile(BytesIO(r.content)) as z:
                         ipa_in_zip = next((n for n in z.namelist() if n.lower().endswith('.ipa')), None)
                         if not ipa_in_zip:
                             raise Exception(f"No IPA found inside nightly.link ZIP for {name}")
@@ -582,10 +586,11 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
                                     logger.info(f"Successfully moved nightly.link asset to {current_repo} direct link")
         else:
             # Standard release download
-            with client.session.get(download_url, stream=True, timeout=300) as r:
-                r.raise_for_status()
-                with open(temp_path, 'wb') as f:
-                    shutil.copyfileobj(r.raw, f)
+            r = client.get(download_url, stream=True, timeout=300)
+            if not r:
+                raise Exception(f"Failed to download from {download_url}")
+            with open(temp_path, 'wb') as f:
+                f.write(r.content)
 
         default_bundle_id = f"com.placeholder.{name.lower().replace(' ', '')}"
         ipa_version, ipa_build, bundle_id = get_ipa_metadata(temp_path, default_bundle_id)

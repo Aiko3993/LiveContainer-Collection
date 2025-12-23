@@ -93,12 +93,37 @@ class GitHubClient:
         if self.token:
             self.headers["Authorization"] = f"Bearer {self.token}"
 
-    def get(self, url, timeout=15):
+    def get_current_repo(self):
+        """Get the current repository name (Owner/Repo)."""
+        repo = os.environ.get('GITHUB_REPOSITORY')
+        if repo:
+            return repo
+            
+        # Try to get from git remote if local
         try:
-            response = self.session.get(url, headers=self.headers, timeout=timeout)
-            response.raise_for_status()
-            return response
-        except requests.exceptions.RequestException as e:
+            import subprocess
+            remote = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], text=True).strip()
+            # Handle both https and ssh formats
+            if remote.endswith('.git'):
+                remote = remote[:-4]
+            if 'github.com' in remote:
+                return remote.split('github.com/')[-1].replace(':', '/')
+        except:
+            pass
+        return None
+
+    def get(self, url, params=None, **kwargs):
+        try:
+            headers = self.headers.copy()
+            # Don't send Authorization header to non-GitHub URLs
+            if 'github.com' not in url and 'githubusercontent.com' not in url:
+                headers.pop('Authorization', None)
+            
+            timeout = kwargs.pop('timeout', 30)
+            resp = self.session.get(url, headers=headers, params=params, timeout=timeout, **kwargs)
+            resp.raise_for_status()
+            return resp
+        except Exception as e:
             logger.error(f"Request failed: {url} - {e}")
             return None
 
