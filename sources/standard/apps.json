@@ -2,75 +2,95 @@
   {
     "name": "Aidoku",
     "github_repo": "Aidoku/Aidoku",
-    "icon_url": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/main/Shared/Assets.xcassets/AppIcon.appiconset/Icon.png"
+    "icon_url": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/main/Shared/Assets.xcassets/AppIcon.appiconset/Icon.png",
+    "bundle_id": "app.aidoku.Aidoku"
   },
   {
     "name": "Venera",
     "github_repo": "venera-app/venera",
-    "icon_url": "https://raw.githubusercontent.com/venera-app/venera/refs/heads/master/assets/app_icon.png"
+    "icon_url": "https://raw.githubusercontent.com/venera-app/venera/refs/heads/master/assets/app_icon.png",
+    "bundle_id": "com.github.wgh136.venera"
   },
   {
     "name": "NeoFreeBird",
     "github_repo": "NeoFreeBird/app",
-    "icon_url": "https://raw.githubusercontent.com/NeoFreeBird/app/refs/heads/main/Branding/Icon.png"
+    "icon_url": "https://raw.githubusercontent.com/NeoFreeBird/app/refs/heads/main/Branding/Icon.png",
+    "bundle_id": "com.atebits.Tweetie2"
   },
   {
     "name": "Animeko",
     "github_repo": "open-ani/animeko",
-    "icon_url": "https://raw.githubusercontent.com/open-ani/animeko/main/app/desktop/appResources/linux-x64/icon.png"
+    "icon_url": "https://raw.githubusercontent.com/open-ani/animeko/main/app/desktop/appResources/linux-x64/icon.png",
+    "bundle_id": "org.openani.Animeko"
   },
   {
     "name": "PiliPlus",
     "github_repo": "bggRGjQaUbCoE/PiliPlus",
-    "icon_url": "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/images/logo/logo.png"
+    "icon_url": "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/images/logo/logo.png",
+    "bundle_id": "com.example.piliplus"
   },
   {
     "name": "Apollo",
     "github_repo": "Balackburn/Apollo",
-    "icon_url": "https://raw.githubusercontent.com/Balackburn/Apollo/refs/heads/main/apollo_icons/icon_91.webp"
+    "icon_url": "https://raw.githubusercontent.com/Balackburn/Apollo/refs/heads/main/apollo_icons/icon_91.webp",
+    "bundle_id": "com.christianselig.Apollo"
   },
   {
     "name": "LiveContainer",
     "github_repo": "LiveContainer/LiveContainer",
-    "pre_release": false
+    "pre_release": false,
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "bundle_id": "com.kdt.livecontainer"
   },
   {
     "name": "PPSSPP",
     "github_repo": "hrydgard/ppsspp",
-    "icon_url": "https://raw.githubusercontent.com/hrydgard/ppsspp/master/ios/assets.xcassets/AppIcon.appiconset/icon_backfill_1024.png"
+    "icon_url": "https://raw.githubusercontent.com/hrydgard/ppsspp/master/ios/assets.xcassets/AppIcon.appiconset/icon_backfill_1024.png",
+    "bundle_id": "org.ppsspp.ppsspp"
   },
   {
     "name": "LiveContainer (Nightly)",
     "github_repo": "LiveContainer/LiveContainer",
     "pre_release": true,
-    "tag_regex": "nightly"
+    "tag_regex": "nightly",
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "bundle_id": "com.kdt.livecontainer"
   },
   {
     "name": "LiveContainer+SideStore",
     "github_repo": "LiveContainer/LiveContainer",
-    "pre_release": false
+    "pre_release": false,
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "bundle_id": "com.kdt.livecontainer"
   },
   {
     "name": "LiveContainer+SideStore (Nightly)",
     "github_repo": "LiveContainer/LiveContainer",
     "pre_release": true,
-    "tag_regex": "nightly"
+    "tag_regex": "nightly",
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "bundle_id": "com.kdt.livecontainer"
   },
   {
     "name": "UTM",
     "github_repo": "utmapp/UTM",
-    "pre_release": false
+    "pre_release": false,
+    "icon_url": "https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/icon_512pt.png",
+    "bundle_id": "com.utmapp.UTM"
   },
   {
     "name": "UTM HV",
     "github_repo": "utmapp/UTM",
-    "pre_release": false
+    "pre_release": false,
+    "icon_url": "https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/icon_512pt.png",
+    "bundle_id": "com.utmapp.UTM"
   },
   {
     "name": "Amethyst (Nightly)",
     "github_repo": "AngelAuraMC/Amethyst-iOS",
     "github_workflow": "development.yml",
     "artifact_name": "org.angelauramc.amethyst-ios.ipa",
+    "icon_url": "https://raw.githubusercontent.com/AngelAuraMC/Amethyst-iOS/main/Natives/Assets.xcassets/AppIcon-Dark.appiconset/AppIcon-Dark_1024x1024.png",
     "bundle_id": "org.angelauramc.amethyst"
   },
   {
@@ -108,7 +128,7 @@
     "github_repo": "jpd002/Play-",
     "github_workflow": "build-ios.yaml",
     "artifact_name": "Play_iOS",
-    "icon_url": "https://raw.githubusercontent.com/jpd002/Play-/master/tools/PsfPlayer/Source/ui_ios/Images.xcassets/LaunchImage.launchimage/Launch-55inch.png",
+    "icon_url": "https://raw.githubusercontent.com/jpd002/Play-/master/Source/ui_ios/Resources/icon@2x.png",
     "bundle_id": "com.virtualapplications.play"
   }
 ]

@@ -127,6 +127,20 @@ class GitHubClient:
             logger.error(f"Request failed: {url} - {e}")
             return None
 
+    def head(self, url, **kwargs):
+        try:
+            headers = self.headers.copy()
+            # Don't send Authorization header to non-GitHub URLs
+            if 'github.com' not in url and 'githubusercontent.com' not in url:
+                headers.pop('Authorization', None)
+            
+            timeout = kwargs.pop('timeout', 30)
+            resp = self.session.head(url, headers=headers, timeout=timeout, **kwargs)
+            return resp
+        except Exception as e:
+            logger.error(f"HEAD request failed: {url} - {e}")
+            return None
+
     def get_repo_info(self, repo):
         url = f"https://api.github.com/repos/{repo}"
         resp = self.get(url)

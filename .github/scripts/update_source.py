@@ -526,7 +526,7 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
                                 if release:
                                     # Use a unique name for the asset to avoid collisions
                                     # Format: Owner_Repo_ArtifactName.ipa
-                                    asset_name = f"{repo.replace('/', '_')}_{artifact['name']}.ipa"
+                                    asset_name = f"{repo.replace('/', '_')}_{artifact['name']}"
                                     if not asset_name.lower().endswith('.ipa'):
                                         asset_name += ".ipa"
                                         
@@ -541,13 +541,13 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
                 logger.warning(f"Could not provide direct link for {name}, falling back to nightly.link")
                 
                 # Verify URL first with a HEAD request to handle 404s gracefully
-                head_resp = client.session.head(download_url, timeout=30)
-                if head_resp.status_code == 404:
+                head_resp = client.head(download_url, timeout=30)
+                if not head_resp or head_resp.status_code == 404:
                     # Try common variation: without .yaml extension in URL
                     alt_url = download_url.replace('.yaml', '').replace('.yml', '')
                     logger.info(f"404 on nightly.link, trying alternative: {alt_url}")
-                    head_resp = client.session.head(alt_url, timeout=30)
-                    if head_resp.status_code == 200:
+                    head_resp = client.head(alt_url, timeout=30)
+                    if head_resp and head_resp.status_code == 200:
                         download_url = alt_url
                     else:
                         logger.error(f"nightly.link returned 404 for both {download_url} and {alt_url}")
@@ -576,7 +576,7 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
                                                               body="This release contains direct download links for apps that are only available as GitHub Artifacts.")
                             
                             if release:
-                                asset_name = f"{repo.replace('/', '_')}_{artifact['name']}.ipa"
+                                asset_name = f"{repo.replace('/', '_')}_{artifact['name']}"
                                 if not asset_name.lower().endswith('.ipa'):
                                     asset_name += ".ipa"
                                     

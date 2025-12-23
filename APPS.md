@@ -1,6 +1,6 @@
 # Supported Apps
 
-> *Last Updated: 2025-12-23 13:09:21 (UTC)*
+> *Last Updated: 2025-12-23 21:22:41 (UTC)*
 
 ## Standard Apps
 
@@ -17,15 +17,15 @@
 | <img src="https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png" width="48" height="48"> | **LiveContainer (Nightly)** | Run iOS apps without actually installing them! | [LiveContainer/LiveContainer](https://github.com/LiveContainer/LiveContainer) |
 | <img src="https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png" width="48" height="48"> | **LiveContainer+SideStore** | Run iOS apps without actually installing them! | [LiveContainer/LiveContainer](https://github.com/LiveContainer/LiveContainer) |
 | <img src="https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png" width="48" height="48"> | **LiveContainer+SideStore (Nightly)** | Run iOS apps without actually installing them! | [LiveContainer/LiveContainer](https://github.com/LiveContainer/LiveContainer) |
-| <img src="https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png" width="48" height="48"> | **UTM** | Virtual machines for iOS and macOS | [utmapp/UTM](https://github.com/utmapp/UTM) |
-| <img src="https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png" width="48" height="48"> | **UTM HV** | Virtual machines for iOS and macOS | [utmapp/UTM](https://github.com/utmapp/UTM) |
+| <img src="https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/icon_512pt.png" width="48" height="48"> | **UTM** | Virtual machines for iOS and macOS | [utmapp/UTM](https://github.com/utmapp/UTM) |
+| <img src="https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/icon_512pt.png" width="48" height="48"> | **UTM HV** | Virtual machines for iOS and macOS | [utmapp/UTM](https://github.com/utmapp/UTM) |
 | <img src="https://raw.githubusercontent.com/AngelAuraMC/Amethyst-iOS/main/Natives/Assets.xcassets/AppIcon-Dark.appiconset/AppIcon-Dark_1024x1024.png" width="48" height="48"> | **Amethyst (Nightly)** | A Minecraft: Java Edition Launcher for Android and iOS based on PojavLauncher. This repository contains source code for iOS/iPadOS platform. | [AngelAuraMC/Amethyst-iOS](https://github.com/AngelAuraMC/Amethyst-iOS) |
 | <img src="https://raw.githubusercontent.com/kodjodevf/mangayomi/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png" width="48" height="48"> | **Mangayomi** | Free and open source application for reading manga, novels, and watching animes available on Android, iOS, macOS, Linux and Windows | [kodjodevf/mangayomi](https://github.com/kodjodevf/mangayomi) |
 | <img src="https://raw.githubusercontent.com/khcrysalis/Feather/main/Feather/Resources/Assets.xcassets/AppIcon.appiconset/feather.png" width="48" height="48"> | **Feather** | Free on-device iOS/iPadOS application manager/installer, using certificates part of the Apple Developer Program. | [khcrysalis/Feather](https://github.com/khcrysalis/Feather) |
 | <img src="https://raw.githubusercontent.com/SideStore/SideStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/1024.png" width="48" height="48"> | **SideStore** | SideStore is a fork of AltStore that doesn't require an AltServer. | [SideStore/SideStore](https://github.com/SideStore/SideStore) |
 | <img src="https://raw.githubusercontent.com/Nyasami/Ksign/main/Ksign/Resources/Assets.xcassets/AppIcon.appiconset/Ksign-default.png" width="48" height="48"> | **Ksign** | The "cleaner" Esign app. | [Nyasami/Ksign](https://github.com/Nyasami/Ksign) |
 | <img src="https://raw.githubusercontent.com/Lakr233/Asspp/refs/heads/main/Asspp/App/Assets.xcassets/AppIcon.appiconset/asspp_tinted.png" width="48" height="48"> | **Asspp** | The App Store for your multi-account eco system. | [Lakr233/Asspp](https://github.com/Lakr233/Asspp) |
-| <img src="https://raw.githubusercontent.com/jpd002/Play-/master/tools/PsfPlayer/Source/ui_ios/Images.xcassets/LaunchImage.launchimage/Launch-55inch.png" width="48" height="48"> | **Play! (Nightly)** | Play! - PlayStation2 Emulator | [jpd002/Play-](https://github.com/jpd002/Play-) |
+| <img src="https://raw.githubusercontent.com/jpd002/Play-/master/Source/ui_ios/Resources/icon@2x.png" width="48" height="48"> | **Play! (Nightly)** | Play! - PlayStation2 Emulator | [jpd002/Play-](https://github.com/jpd002/Play-) |
 
 ## NSFW Apps
 
