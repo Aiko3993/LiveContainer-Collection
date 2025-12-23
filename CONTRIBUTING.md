@@ -1,5 +1,7 @@
 # How to Submit New Apps
 
+[中文文档](CONTRIBUTING_CN.md)
+
 Want to add an app to this source? There are two ways to do it.
 
 ### Method 1: The Easy Way (Recommended)
@@ -22,11 +24,6 @@ If you prefer editing files directly or want to add multiple apps at once:
 ### Step 1: Choose Your Category
 
 First, decide where your app belongs. **Do not mix categories.**
-
-- **Standard Apps** (Normal apps): Go to [`sources/standard/apps.json`](sources/standard/apps.json)
-- **NSFW Apps** (Adult content): Go to [`sources/nsfw/apps.json`](sources/nsfw/apps.json)
-
-Click on the file link above to open it.
 
 ---
 

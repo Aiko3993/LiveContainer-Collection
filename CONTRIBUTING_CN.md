@@ -1,5 +1,7 @@
 # 如何提交新应用
 
+[English](CONTRIBUTING.md)
+
 想在这个源里添加一个新应用吗？有两种方法。
 
 ### 方法一：简单模式 (推荐)
@@ -22,11 +24,6 @@
 ### 第一步：选择分类
 
 首先，确定您的应用属于哪一类。**请勿混淆分类。**
-
-- **Standard Apps** (普通应用): 点击进入 [`sources/standard/apps.json`](sources/standard/apps.json)
-- **NSFW Apps** (成人内容): 点击进入 [`sources/nsfw/apps.json`](sources/nsfw/apps.json)
-
-点击上面的链接打开对应的文件。
 
 ---
 
