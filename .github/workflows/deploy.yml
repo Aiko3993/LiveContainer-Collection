@@ -49,5 +49,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "Deploy to GitHub Pages"
+          
+          # Check if there are any changes compared to the current gh-pages
+          git fetch origin gh-pages --depth=1 || true
+          
+          # If gh-pages exists, we check for differences
+          if git rev-parse --verify origin/gh-pages >/dev/null 2>&1; then
+            # Temporary commit to compare
+            git commit -m "Temp"
+            
+            # Compare current content with remote gh-pages
+            # We use git diff to see if there's any actual difference in tracked files
+            if git diff origin/gh-pages --quiet; then
+              echo "No changes detected compared to gh-pages. Skipping deployment."
+              exit 0
+            fi
+            
+            # If there are changes, we reset the temp commit and do a proper one
+            git reset --soft HEAD~1
+          fi
+
+          git commit -m "Deploy to GitHub Pages (Automated)"
           git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
