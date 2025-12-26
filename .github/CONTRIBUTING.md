@@ -22,6 +22,9 @@ Once an admin approves your request, the system will **automatically** add the a
 
 If you prefer editing files directly or want to add multiple apps at once:
 
+> **Tip**: We recommend using **VSCode**. The project includes a configured `apps.schema.json`, so you'll get intelligent auto-completion and error checking while editing `apps.json`.
+> You can also run `python3 .github/scripts/validate_apps.py --fix` to automatically sort and format your entries.
+
 ### Step 1: Choose Your Category
 
 First, decide where your app belongs. **Do not mix categories.**
@@ -95,4 +98,4 @@ If it fails (Red ❌), please check if you missed a comma or used wrong quotes.
 
 ## For Maintainers
 
-If you are a project maintainer or an AI assistant, please refer to the [Maintenance Manual](MAINTENANCE.md) for architecture details and operational guidelines.
+If you are a project maintainer or an AI assistant, please refer to the [Maintenance Manual](../MAINTENANCE.md) for architecture details and operational guidelines.

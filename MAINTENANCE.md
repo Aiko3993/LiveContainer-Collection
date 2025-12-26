@@ -18,17 +18,21 @@ The `main` branch serves as the development source. It does **NOT** directly con
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── add_app.yml         # [TEMPLATE] "Add App" issue form definition (Options auto-synced)
 │   │   └── config.yml          # [CONFIG] Issue template configuration
+│   ├── schemas/                # [CONFIG] JSON Schemas (apps.schema.json)
 │   ├── scripts/
 │   │   ├── add_app.py          # [UTILITY] Handles app requests (add/remove), supports dynamic categories
 │   │   ├── update_source.py    # [CORE] Full source regeneration, Smart Parsing, Auto Version/Icon Discovery, Artifact Support, & Auto-Sync metadata
 │   │   ├── validate_apps.py    # [VALIDATION] Validates apps.json (auto-discovers config files)
 │   │   ├── sync_issue_template.py # [AUTOMATION] Syncs directory structure to Issue Template dropdowns
 │   │   └── utils.py            # [SHARED] Common utilities (JSON, Logger, GitHub Client with Workflow/Artifact support)
-│   └── workflows/
-│       ├── deploy.yml          # [CI] Deploys website and source files to gh-pages
-│       ├── process_issue.yml   # [CI] Automates app addition/rejection from issues
-│       ├── update.yml          # [CI] Scheduled task to update source.json hourly
-│       └── validate_json.yml   # [CI] Validates PRs modifying apps.json
+│   ├── workflows/
+│   │   ├── deploy.yml          # [CI] Deploys website and source files to gh-pages
+│   │   ├── process_issue.yml   # [CI] Automates app addition/rejection from issues
+│   │   ├── update.yml          # [CI] Scheduled task to update source.json hourly
+│   │   └── validate_json.yml   # [CI] Validates PRs modifying apps.json
+│   ├── APPS.md                 # [DOCS] Auto-generated list of supported apps
+│   ├── CONTRIBUTING.md         # [DOCS] Contribution guide (English)
+│   └── CONTRIBUTING_CN.md      # [DOCS] Contribution guide (Chinese)
 ├── website/                    # [WEB SOURCE] Source files for the website
 │   ├── css/
 │   │   └── flat.css            # [STYLE] Main stylesheet
@@ -47,14 +51,13 @@ The `main` branch serves as the development source. It does **NOT** directly con
 ├── sources/
 │   ├── nsfw/
 │   │   ├── apps.json           # [DATA] NSFW edition app list (Manually maintained)
+│   │   ├── icon/               # [ASSETS] App icons (Auto-downloaded)
 │   │   └── source.json         # [ARTIFACT] NSFW edition source file (Auto-generated)
 │   └── standard/
 │       ├── apps.json           # [DATA] Standard edition app list (Manually maintained)
+│       ├── icon/               # [ASSETS] App icons (Auto-downloaded)
 │       └── source.json         # [ARTIFACT] Standard edition source file (Auto-generated)
 ├── .gitignore                  # [CONFIG] Git ignore rules
-├── APPS.md                     # [DOCS] Auto-generated list of supported apps
-├── CONTRIBUTING.md             # [DOCS] Contribution guide (English)
-├── CONTRIBUTING_CN.md          # [DOCS] Contribution guide (Chinese)
 ├── LICENSE                     # [LEGAL] MIT License
 ├── MAINTENANCE.md              # [DOCS] Project Maintenance Manual
 ├── README.md                   # [DOCS] Project overview (English)
@@ -82,6 +85,12 @@ The deployment structure is a flattened version of `main`:
 
 ### 1.3 Key Configuration Files
 
+*   **config.yml (`.github/`)**:
+    *   **Global Configuration**: Stores centralized settings like `skip_versions` and `icon_scoring` rules.
+    *   **Purpose**: Decouples logic from configuration, allowing easy adjustments without modifying Python code.
+*   **apps.schema.json (`.github/schemas/`)**:
+    *   **JSON Schema**: Defines the structure and validation rules for `apps.json`.
+    *   **Integration**: VSCode uses this to provide real-time auto-completion and error checking for contributors.
 *   **apps.json (`sources/standard/`, `sources/nsfw/`)**:
     *   The data source of the project.
     *   **Must include**: `name`, `github_repo` (Format: `Owner/Repo`).
@@ -125,8 +134,17 @@ This project mainly depends on the Python environment, and dependencies are defi
     *   `requests`: Network requests
     *   `Pillow`: Image processing (extracting icon dominant color)
     *   `urllib3`: Handling retry logic
+    *   `PyYAML`: Parsing `config.yml` (with a built-in fallback parser if missing).
+    *   `concurrent.futures`: ThreadPoolExecutor for parallel processing
 
-### 1.5 Frontend Features
+### 1.5 Parallelization & Performance
+
+*   **Multithreading**: `update_source.py` uses `ThreadPoolExecutor` (default 5 workers) to process apps concurrently.
+*   **Map-Reduce**: 
+    1.  **Map**: Fetches metadata, checks releases, and downloads artifacts in parallel threads.
+    2.  **Reduce**: Aggregates results in the main thread to ensure `source.json` integrity and thread-safe file writing.
+
+### 1.6 Frontend Features
 
 *   **Dynamic Theming**: App cards extract dominant colors or use `tint_color` from `apps.json` to generate glow effects and button colors.
 *   **Easter Egg System**:
@@ -285,16 +303,19 @@ In case of severe failure (e.g., generating a corrupted source.json causing clie
 | v1.9 | 2025-12-22 | AI Assistant | Introduced `.github/scripts/utils.py` for centralized logic and robust error handling. Refactored scripts to use shared utilities. Updated directory structure documentation. |
 | v1.10 | 2025-12-22 | AI Assistant | **Major Architecture Change**: Isolated website source files to `website/` directory. Configured `gh-pages` as an orphan branch for deployment artifacts. Updated `deploy.yml` for cleaner main branch and hot-reloading support. |
 | v1.11 | 2025-12-22 | AI Assistant | **Directory Consolidation**: Moved `standard/` and `nsfw/` into a unified `sources/` directory. Updated all scripts, workflows, and documentation to reflect this change. |
-| v1.13 | 2025-12-22 | AI Assistant | **Frontend Overhaul**: Implemented modern "Flat Card" design with Tailwind CSS. Added dynamic theming based on app tint color. Refactored JS/CSS structure for modularity. |
-| v1.14 | 2025-12-22 | AI Assistant | **Cleanup & Optimization**: Removed deprecated `index.html` from root. Updated `MAINTENANCE.md` to reflect new directory structure (ES Modules). Verified full CI pipeline robustness. |
-| v1.15 | 2025-12-22 | AI Assistant | **Testing Infrastructure**: Added `.github/scripts/mock_test_runner.py` for comprehensive local logic verification without GitHub API dependencies. Updated validation guidelines. |
-| v1.16 | 2025-12-22 | AI Assistant | **Logic Hardening**: Refined `process_issue.yml` and `add_app.py` to ensure robust icon URL extraction and commit message generation. Implemented "Sync Back" logic in `update_source.py` to automatically populate missing metadata in `apps.json` from auto-discovered sources. |
-| v1.17 | 2025-12-23 | AI Assistant | **Easter Egg Overhaul**: Refactored `effects.js` significantly. <br>1. **Retro Pong**: Rewrote physics engine (acceleration, angular reflection), added game states (serve/play/score), and optimized touch handling.<br>2. **ASCII Waifu**: Replaced static art with `ART_COMPILER_V1.0` interactive terminal for custom ASCII injection.<br>3. **Safety**: Removed flash effects from Konami Code entry; added responsive text scaling.<br>4. **Stability**: Fixed `autoDismiss` logic across all effects. |
-| v1.18 | 2025-12-23 | AI Assistant | **Infrastructure Fixes**: <br>1. **GitHub Actions**: Resolved 403 Forbidden error by removing task-level permission overrides in `process_issue.yml`. <br>2. **Issue Templates**: Fixed YAML syntax in `add_app.yml` to restore template visibility and enforced category ordering (Standard > NSFW). <br>3. **Bug Redirection**: Fully redirected Bug Reports to GitHub Discussions via `config.yml`. |
-| v1.19 | 2025-12-23 | AI Assistant | **Release & IPA Logic Enhancements**: <br>1. **Stability First**: Default to latest stable release instead of newest pre-release. <br>2. **Nightly Support**: Added `pre_release` flag in `apps.json` to opt-in for beta/nightly versions. <br>3. **Tag Filtering**: Added `tag_regex` support to allow pinning or filtering releases by tag name. <br>4. **Smart IPA Picker**: Implemented `select_best_ipa` to automatically prioritize clean IPA names (filtering out `-Remote`, `-HV`, etc.) and added `ipa_regex` override support. <br>5. **Multi-Flavor Support**: Updated validation to allow multiple entries for the same repo with unique names. |
-| v1.20 | 2025-12-23 | AI Assistant | **GitHub Actions Artifacts Support**: <br>1. **Artifact Fetching**: Integrated GitHub Actions API to download IPAs from workflow runs (e.g., Amethyst Nightly). <br>2. **Auto-Sync Metadata**: Enhanced script to sync `bundle_id` and `icon_url` back to `apps.json` automatically. <br>3. **Logic Optimization**: Implemented fast-skip for up-to-date apps and refined icon scraping logic. |
+| v1.12 | 2025-12-22 | AI Assistant | **Frontend Overhaul**: Implemented modern "Flat Card" design with Tailwind CSS. Added dynamic theming based on app tint color. Refactored JS/CSS structure for modularity. |
+| v1.13 | 2025-12-22 | AI Assistant | **Cleanup & Optimization**: Removed deprecated `index.html` from root. Updated `MAINTENANCE.md` to reflect new directory structure (ES Modules). Verified full CI pipeline robustness. |
+| v1.14 | 2025-12-22 | AI Assistant | **Testing Infrastructure**: Added `.github/scripts/mock_test_runner.py` for comprehensive local logic verification without GitHub API dependencies. Updated validation guidelines. |
+| v1.15 | 2025-12-22 | AI Assistant | **Logic Hardening**: Refined `process_issue.yml` and `add_app.py` to ensure robust icon URL extraction and commit message generation. Implemented "Sync Back" logic in `update_source.py` to automatically populate missing metadata in `apps.json` from auto-discovered sources. |
+| v1.16 | 2025-12-23 | AI Assistant | **Easter Egg Overhaul**: Refactored `effects.js` significantly. <br>1. **Retro Pong**: Rewrote physics engine (acceleration, angular reflection), added game states (serve/play/score), and optimized touch handling.<br>2. **ASCII Waifu**: Replaced static art with `ART_COMPILER_V1.0` interactive terminal for custom ASCII injection.<br>3. **Safety**: Removed flash effects from Konami Code entry; added responsive text scaling.<br>4. **Stability**: Fixed `autoDismiss` logic across all effects. |
+| v1.17 | 2025-12-23 | AI Assistant | **Infrastructure Fixes**: <br>1. **GitHub Actions**: Resolved 403 Forbidden error by removing task-level permission overrides in `process_issue.yml`. <br>2. **Issue Templates**: Fixed YAML syntax in `add_app.yml` to restore template visibility and enforced category ordering (Standard > NSFW). <br>3. **Bug Redirection**: Fully redirected Bug Reports to GitHub Discussions via `config.yml`. |
+| v1.18 | 2025-12-23 | AI Assistant | **Release & IPA Logic Enhancements**: <br>1. **Stability First**: Default to latest stable release instead of newest pre-release. <br>2. **Nightly Support**: Added `pre_release` flag in `apps.json` to opt-in for beta/nightly versions. <br>3. **Tag Filtering**: Added `tag_regex` support to allow pinning or filtering releases by tag name. <br>4. **Smart IPA Picker**: Implemented `select_best_ipa` to automatically prioritize clean IPA names (filtering out `-Remote`, `-HV`, etc.) and added `ipa_regex` override support. <br>5. **Multi-Flavor Support**: Updated validation to allow multiple entries for the same repo with unique names. |
+| v1.19 | 2025-12-23 | AI Assistant | **GitHub Actions Artifacts Support**: <br>1. **Artifact Fetching**: Integrated GitHub Actions API to download IPAs from workflow runs (e.g., Amethyst Nightly). <br>2. **Auto-Sync Metadata**: Enhanced script to sync `bundle_id` and `icon_url` back to `apps.json` automatically. <br>3. **Logic Optimization**: Implemented fast-skip for up-to-date apps and refined icon scraping logic. |
+| v1.20 | 2025-12-26 | AI Assistant | **Parallelization**: Refactored `update_source.py` to support multithreaded processing (5x concurrency), significantly reducing execution time for network-bound tasks. |
+| v1.21 | 2025-12-26 | AI Assistant | **Architecture Refinement**: Externalized configuration to `.github/config.yml` and implemented JSON Schema validation with VSCode integration. |
+| v1.22 | 2025-12-26 | AI Assistant | **Standardization**: Reorganized repository structure by moving `APPS.md`, `CONTRIBUTING.md`, and schemas to `.github/` directories. |
 
 ---
 
 
-*Last Updated: 2025-12-23*
+*Last Updated: 2025-12-26*

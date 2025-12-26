@@ -8,6 +8,33 @@
   "tintColor": "#db2777",
   "apps": [
     {
+      "name": "JHentai",
+      "githubRepo": "jiangtian616/JHenTai",
+      "bundleIdentifier": "top.jtmonster.jhentai",
+      "developerName": "jiangtian616",
+      "version": "8.0.10+302",
+      "versionDate": "2025-10-11",
+      "versionDescription": "- 修复空文件名图片会导致保存图片失败的bug\n\n--------------------\n\n- Fix the bug that saving images fails when the filename is empty.",
+      "downloadURL": "https://github.com/jiangtian616/JHenTai/releases/download/v8.0.10%2B302/JHenTai_8.0.10%2B302.ipa",
+      "localizedDescription": "A cross-platform manga app made for e-hentai & exhentai by Flutter",
+      "iconURL": "https://raw.githubusercontent.com/jiangtian616/JHenTai/master/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
+      "tintColor": "#E6E623",
+      "size": 15698779,
+      "permissions": {},
+      "screenshotURLs": [],
+      "versions": [
+        {
+          "version": "8.0.10+302",
+          "date": "2025-10-11",
+          "localizedDescription": "- 修复空文件名图片会导致保存图片失败的bug\n\n--------------------\n\n- Fix the bug that saving images fails when the filename is empty.",
+          "downloadURL": "https://github.com/jiangtian616/JHenTai/releases/download/v8.0.10%2B302/JHenTai_8.0.10%2B302.ipa",
+          "size": 15698779,
+          "sha256": "7d92624f76c76272f276545b2971d8274e7d9d685190e418673026ec27d829aa"
+        }
+      ],
+      "sha256": "7d92624f76c76272f276545b2971d8274e7d9d685190e418673026ec27d829aa"
+    },
+    {
       "name": "LoveIwara",
       "bundleIdentifier": "m.c.g.a.i_iwara",
       "developerName": "FoxSensei001",
@@ -56,33 +83,6 @@
       ],
       "githubRepo": "Pacalini/PicaComic",
       "sha256": "cbc10f0827cb756ab4c1af9a9c78761f374015dde2425f76ee7b8fb4b18a27c1"
-    },
-    {
-      "name": "JHentai",
-      "githubRepo": "jiangtian616/JHenTai",
-      "bundleIdentifier": "top.jtmonster.jhentai",
-      "developerName": "jiangtian616",
-      "version": "8.0.10+302",
-      "versionDate": "2025-10-11",
-      "versionDescription": "- 修复空文件名图片会导致保存图片失败的bug\n\n--------------------\n\n- Fix the bug that saving images fails when the filename is empty.",
-      "downloadURL": "https://github.com/jiangtian616/JHenTai/releases/download/v8.0.10%2B302/JHenTai_8.0.10%2B302.ipa",
-      "localizedDescription": "A cross-platform manga app made for e-hentai & exhentai by Flutter",
-      "iconURL": "https://raw.githubusercontent.com/jiangtian616/JHenTai/master/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
-      "tintColor": "#E6E623",
-      "size": 15698779,
-      "permissions": {},
-      "screenshotURLs": [],
-      "versions": [
-        {
-          "version": "8.0.10+302",
-          "date": "2025-10-11",
-          "localizedDescription": "- 修复空文件名图片会导致保存图片失败的bug\n\n--------------------\n\n- Fix the bug that saving images fails when the filename is empty.",
-          "downloadURL": "https://github.com/jiangtian616/JHenTai/releases/download/v8.0.10%2B302/JHenTai_8.0.10%2B302.ipa",
-          "size": 15698779,
-          "sha256": "7d92624f76c76272f276545b2971d8274e7d9d685190e418673026ec27d829aa"
-        }
-      ],
-      "sha256": "7d92624f76c76272f276545b2971d8274e7d9d685190e418673026ec27d829aa"
     }
   ],
   "news": []

@@ -1,7 +1,7 @@
 # Aiko3993's Sideload Source for iOS
 
 [![Web Interface](https://img.shields.io/badge/Web_Interface-View_Source-blue?style=for-the-badge&logo=safari)](https://aiko3993.github.io/iOS-Sideload-Source/)
-[![Add App](https://img.shields.io/badge/Contribute-Add_App-green?style=for-the-badge&logo=github)](CONTRIBUTING_CN.md)
+[![Add App](https://img.shields.io/badge/Contribute-Add_App-green?style=for-the-badge&logo=github)](.github/CONTRIBUTING_CN.md)
 
 这是一个适用于 **AltStore**、**SideStore** 和 **LiveContainer** 的个人侧载应用源，或许还有更多。
 它会自动从 GitHub Releases 获取最新的 IPA，并生成通用的源文件。 
@@ -26,13 +26,13 @@ https://raw.githubusercontent.com/Aiko3993/iOS-Sideload-Source/main/sources/stan
 ## 提交应用
 
 想添加新应用？非常简单！
-👉 **[阅读应用提交指南](CONTRIBUTING_CN.md)**
+👉 **[阅读应用提交指南](.github/CONTRIBUTING_CN.md)**
 
 ## 支持应用列表
  
 > *支持的应用列表由脚本自动生成。*
  
-👉 **[查看支持应用列表](APPS.md)**
+👉 **[查看支持应用列表](.github/APPS.md)**
  
 ## 自动化机制
 

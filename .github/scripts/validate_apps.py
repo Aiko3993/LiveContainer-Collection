@@ -1,6 +1,35 @@
 import sys
 import os
-from utils import load_json, validate_repo_format, validate_url, logger
+import argparse
+from utils import load_json, save_json, validate_repo_format, validate_url, logger
+
+def fix_apps_json(file_path):
+    """Sort and format apps.json."""
+    logger.info(f"Fixing {file_path}...")
+    data = load_json(file_path)
+    if not isinstance(data, list):
+        logger.error("Root must be a list, cannot fix.")
+        return False
+    
+    # Sort by name case-insensitive
+    data.sort(key=lambda x: x.get('name', '').lower())
+    
+    fixed_data = []
+    for app in data:
+        # Reorder keys: name, github_repo first
+        ordered_app = {}
+        if 'name' in app: ordered_app['name'] = app['name']
+        if 'github_repo' in app: ordered_app['github_repo'] = app['github_repo']
+        
+        # Add rest of the keys sorted
+        for k in sorted(app.keys()):
+            if k not in ['name', 'github_repo']:
+                ordered_app[k] = app[k]
+        fixed_data.append(ordered_app)
+    
+    save_json(file_path, fixed_data)
+    logger.info(f"✅ Auto-fixed {file_path}")
+    return True
 
 def validate_apps_json(file_path, global_seen_repos):
     logger.info(f"Validating {file_path}...")
@@ -53,12 +82,20 @@ def validate_apps_json(file_path, global_seen_repos):
     return success
 
 def main():
+    parser = argparse.ArgumentParser(description='Validate or fix apps.json files.')
+    parser.add_argument('--fix', action='store_true', help='Auto-fix formatting and sorting errors')
+    args = parser.parse_args()
+
     files_to_check = ['sources/standard/apps.json', 'sources/nsfw/apps.json']
     global_seen_repos = set()
     all_valid = True
     
     for file_path in files_to_check:
         if os.path.exists(file_path):
+            if args.fix:
+                fix_apps_json(file_path)
+            
+            # Always validate after fixing (or if not fixing)
             if not validate_apps_json(file_path, global_seen_repos):
                 all_valid = False
         else:

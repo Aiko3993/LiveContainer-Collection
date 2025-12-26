@@ -2,125 +2,125 @@
   {
     "name": "Aidoku",
     "github_repo": "Aidoku/Aidoku",
-    "icon_url": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/main/Shared/Assets.xcassets/AppIcon.appiconset/Icon.png",
-    "bundle_id": "app.aidoku.Aidoku"
-  },
-  {
-    "name": "Venera",
-    "github_repo": "venera-app/venera",
-    "icon_url": "https://raw.githubusercontent.com/venera-app/venera/refs/heads/master/assets/app_icon.png",
-    "bundle_id": "com.github.wgh136.venera"
-  },
-  {
-    "name": "NeoFreeBird",
-    "github_repo": "NeoFreeBird/app",
-    "icon_url": "https://raw.githubusercontent.com/NeoFreeBird/app/refs/heads/main/Branding/Icon.png",
-    "bundle_id": "com.atebits.Tweetie2"
-  },
-  {
-    "name": "Animeko",
-    "github_repo": "open-ani/animeko",
-    "icon_url": "https://raw.githubusercontent.com/open-ani/animeko/main/app/desktop/appResources/linux-x64/icon.png",
-    "bundle_id": "org.openani.Animeko"
-  },
-  {
-    "name": "PiliPlus",
-    "github_repo": "bggRGjQaUbCoE/PiliPlus",
-    "icon_url": "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/images/logo/logo.png",
-    "bundle_id": "com.example.piliplus"
-  },
-  {
-    "name": "Apollo",
-    "github_repo": "Balackburn/Apollo",
-    "icon_url": "https://raw.githubusercontent.com/Balackburn/Apollo/refs/heads/main/apollo_icons/icon_91.webp",
-    "bundle_id": "com.christianselig.Apollo"
-  },
-  {
-    "name": "LiveContainer",
-    "github_repo": "LiveContainer/LiveContainer",
-    "pre_release": false,
-    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
-    "bundle_id": "com.kdt.livecontainer"
-  },
-  {
-    "name": "PPSSPP",
-    "github_repo": "hrydgard/ppsspp",
-    "icon_url": "https://raw.githubusercontent.com/hrydgard/ppsspp/master/ios/assets.xcassets/AppIcon.appiconset/icon_backfill_1024.png",
-    "bundle_id": "org.ppsspp.ppsspp"
-  },
-  {
-    "name": "LiveContainer (Nightly)",
-    "github_repo": "LiveContainer/LiveContainer",
-    "pre_release": true,
-    "tag_regex": "nightly",
-    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
-    "bundle_id": "com.kdt.livecontainer"
-  },
-  {
-    "name": "LiveContainer+SideStore",
-    "github_repo": "LiveContainer/LiveContainer",
-    "pre_release": false,
-    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
-    "bundle_id": "com.kdt.livecontainer"
-  },
-  {
-    "name": "LiveContainer+SideStore (Nightly)",
-    "github_repo": "LiveContainer/LiveContainer",
-    "pre_release": true,
-    "tag_regex": "nightly",
-    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
-    "bundle_id": "com.kdt.livecontainer"
-  },
-  {
-    "name": "UTM",
-    "github_repo": "utmapp/UTM",
-    "pre_release": false,
-    "icon_url": "https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png",
-    "bundle_id": "com.utmapp.UTM"
-  },
-  {
-    "name": "UTM HV",
-    "github_repo": "utmapp/UTM",
-    "pre_release": false,
-    "icon_url": "https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png",
-    "bundle_id": "com.utmapp.UTM"
+    "bundle_id": "app.aidoku.Aidoku",
+    "icon_url": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/main/Shared/Assets.xcassets/AppIcon.appiconset/Icon.png"
   },
   {
     "name": "Amethyst (Nightly)",
     "github_repo": "AngelAuraMC/Amethyst-iOS",
-    "github_workflow": "development.yml",
     "artifact_name": "org.angelauramc.amethyst-ios.ipa",
-    "icon_url": "https://raw.githubusercontent.com/AngelAuraMC/Amethyst-iOS/main/Natives/Assets.xcassets/AppIcon-Dark.appiconset/AppIcon-Dark_1024x1024.png",
-    "bundle_id": "org.angelauramc.amethyst"
+    "bundle_id": "org.angelauramc.amethyst",
+    "github_workflow": "development.yml",
+    "icon_url": "https://raw.githubusercontent.com/AngelAuraMC/Amethyst-iOS/main/Natives/Assets.xcassets/AppIcon-Dark.appiconset/AppIcon-Dark_1024x1024.png"
   },
   {
-    "name": "Mangayomi",
-    "github_repo": "kodjodevf/mangayomi",
-    "icon_url": "https://raw.githubusercontent.com/kodjodevf/mangayomi/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png",
-    "bundle_id": "com.kodjodevf.mangayomi"
+    "name": "Animeko",
+    "github_repo": "open-ani/animeko",
+    "bundle_id": "org.openani.Animeko",
+    "icon_url": "https://raw.githubusercontent.com/open-ani/animeko/main/app/desktop/appResources/linux-x64/icon.png"
   },
   {
-    "name": "Feather",
-    "github_repo": "khcrysalis/Feather",
-    "icon_url": "https://raw.githubusercontent.com/khcrysalis/Feather/main/Feather/Resources/Assets.xcassets/AppIcon.appiconset/feather.png",
-    "bundle_id": "thewonderofyou.Feather"
-  },
-  {
-    "name": "SideStore",
-    "github_repo": "SideStore/SideStore",
-    "icon_url": "https://raw.githubusercontent.com/SideStore/SideStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/1024.png",
-    "bundle_id": "com.SideStore.SideStore"
-  },
-  {
-    "name": "Ksign",
-    "github_repo": "Nyasami/Ksign",
-    "icon_url": "https://raw.githubusercontent.com/Nyasami/Ksign/main/Ksign/Resources/Assets.xcassets/AppIcon.appiconset/Ksign-default.png",
-    "bundle_id": "nya.asami.ksign"
+    "name": "Apollo",
+    "github_repo": "Balackburn/Apollo",
+    "bundle_id": "com.christianselig.Apollo",
+    "icon_url": "https://raw.githubusercontent.com/Balackburn/Apollo/refs/heads/main/apollo_icons/icon_91.webp"
   },
   {
     "name": "Asspp",
     "github_repo": "Lakr233/Asspp",
-    "icon_url": "https://raw.githubusercontent.com/Lakr233/Asspp/refs/heads/main/Asspp/App/Assets.xcassets/AppIcon.appiconset/asspp_tinted.png",
-    "bundle_id": "wiki.qaq.Asspp"
+    "bundle_id": "wiki.qaq.Asspp",
+    "icon_url": "https://raw.githubusercontent.com/Lakr233/Asspp/refs/heads/main/Asspp/App/Assets.xcassets/AppIcon.appiconset/asspp_tinted.png"
+  },
+  {
+    "name": "Feather",
+    "github_repo": "khcrysalis/Feather",
+    "bundle_id": "thewonderofyou.Feather",
+    "icon_url": "https://raw.githubusercontent.com/khcrysalis/Feather/main/Feather/Resources/Assets.xcassets/AppIcon.appiconset/feather.png"
+  },
+  {
+    "name": "Ksign",
+    "github_repo": "Nyasami/Ksign",
+    "bundle_id": "nya.asami.ksign",
+    "icon_url": "https://raw.githubusercontent.com/Nyasami/Ksign/main/Ksign/Resources/Assets.xcassets/AppIcon.appiconset/Ksign-default.png"
+  },
+  {
+    "name": "LiveContainer",
+    "github_repo": "LiveContainer/LiveContainer",
+    "bundle_id": "com.kdt.livecontainer",
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "pre_release": false
+  },
+  {
+    "name": "LiveContainer (Nightly)",
+    "github_repo": "LiveContainer/LiveContainer",
+    "bundle_id": "com.kdt.livecontainer",
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "pre_release": true,
+    "tag_regex": "nightly"
+  },
+  {
+    "name": "LiveContainer+SideStore",
+    "github_repo": "LiveContainer/LiveContainer",
+    "bundle_id": "com.kdt.livecontainer",
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "pre_release": false
+  },
+  {
+    "name": "LiveContainer+SideStore (Nightly)",
+    "github_repo": "LiveContainer/LiveContainer",
+    "bundle_id": "com.kdt.livecontainer",
+    "icon_url": "https://raw.githubusercontent.com/LiveContainer/LiveContainer/main/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon1024.png",
+    "pre_release": true,
+    "tag_regex": "nightly"
+  },
+  {
+    "name": "Mangayomi",
+    "github_repo": "kodjodevf/mangayomi",
+    "bundle_id": "com.kodjodevf.mangayomi",
+    "icon_url": "https://raw.githubusercontent.com/kodjodevf/mangayomi/main/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png"
+  },
+  {
+    "name": "NeoFreeBird",
+    "github_repo": "NeoFreeBird/app",
+    "bundle_id": "com.atebits.Tweetie2",
+    "icon_url": "https://raw.githubusercontent.com/NeoFreeBird/app/refs/heads/main/Branding/Icon.png"
+  },
+  {
+    "name": "PiliPlus",
+    "github_repo": "bggRGjQaUbCoE/PiliPlus",
+    "bundle_id": "com.example.piliplus",
+    "icon_url": "https://raw.githubusercontent.com/bggRGjQaUbCoE/PiliPlus/main/assets/images/logo/logo.png"
+  },
+  {
+    "name": "PPSSPP",
+    "github_repo": "hrydgard/ppsspp",
+    "bundle_id": "org.ppsspp.ppsspp",
+    "icon_url": "https://raw.githubusercontent.com/hrydgard/ppsspp/master/ios/assets.xcassets/AppIcon.appiconset/icon_backfill_1024.png"
+  },
+  {
+    "name": "SideStore",
+    "github_repo": "SideStore/SideStore",
+    "bundle_id": "com.SideStore.SideStore",
+    "icon_url": "https://raw.githubusercontent.com/SideStore/SideStore/develop/AltStore/Resources/Icons.xcassets/AppIcon.appiconset/1024.png"
+  },
+  {
+    "name": "UTM",
+    "github_repo": "utmapp/UTM",
+    "bundle_id": "com.utmapp.UTM",
+    "icon_url": "https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png",
+    "pre_release": false
+  },
+  {
+    "name": "UTM HV",
+    "github_repo": "utmapp/UTM",
+    "bundle_id": "com.utmapp.UTM",
+    "icon_url": "https://raw.githubusercontent.com/utmapp/UTM/main/Platform/Assets.xcassets/AppIcon.appiconset/Icon.png",
+    "pre_release": false
+  },
+  {
+    "name": "Venera",
+    "github_repo": "venera-app/venera",
+    "bundle_id": "com.github.wgh136.venera",
+    "icon_url": "https://raw.githubusercontent.com/venera-app/venera/refs/heads/master/assets/app_icon.png"
   }
 ]

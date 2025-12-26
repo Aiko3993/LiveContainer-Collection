@@ -22,6 +22,9 @@
 
 如果你更喜欢直接编辑文件，或者想一次性添加多个应用：
 
+> **技巧**: 我们推荐使用 **VSCode**。本项目配置了 `apps.schema.json`，在编辑 `apps.json` 时你会获得智能提示和错误检查。
+> 你也可以在本地运行 `python3 .github/scripts/validate_apps.py --fix` 来自动格式化和排序你的条目。
+
 ### 第一步：选择分类
 
 首先，确定您的应用属于哪一类。**请勿混淆分类。**
@@ -93,4 +96,4 @@ GitHub Actions 会自动检查您的 JSON 格式。如果检查通过，管理�
 
 ## 维护者指南
 
-如果您是项目维护者或 AI 助手，请参阅 [维护手册 (MAINTENANCE.md)](MAINTENANCE.md) 以了解架构详情和操作指南。
+如果您是项目维护者或 AI 助手，请参阅 [维护手册 (MAINTENANCE.md)](../MAINTENANCE.md) 以了解架构详情和操作指南。

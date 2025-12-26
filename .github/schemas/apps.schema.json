@@ -1,0 +1,58 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Apps List",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "required": [
+            "name",
+            "github_repo"
+        ],
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The display name of the application."
+            },
+            "github_repo": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9._-]+/[a-zA-Z0-9._-]+$",
+                "description": "The GitHub repository in 'owner/repo' format."
+            },
+            "icon_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to the application icon."
+            },
+            "bundle_id": {
+                "type": "string",
+                "description": "The bundle identifier (e.g., com.example.app)."
+            },
+            "tint_color": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+                "description": "Hex color code for the app theme."
+            },
+            "pre_release": {
+                "type": "boolean",
+                "default": false,
+                "description": "Whether to include pre-releases/beta versions."
+            },
+            "tag_regex": {
+                "type": "string",
+                "description": "Regex to filter release tags (e.g., 'nightly')."
+            },
+            "ipa_regex": {
+                "type": "string",
+                "description": "Regex to filter IPA filenames."
+            },
+            "github_workflow": {
+                "type": "string",
+                "description": "Workflow filename to fetch artifacts from (e.g., 'build.yml')."
+            },
+            "artifact_name": {
+                "type": "string",
+                "description": "Name of the artifact to download from workflow."
+            }
+        }
+    }
+}

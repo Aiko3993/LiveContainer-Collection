@@ -36,7 +36,7 @@ jobs:
           cp -r sources/nsfw public/sources/
           
           # Docs
-          [ -f APPS.md ] && cp APPS.md public/ || true
+          [ -f .github/APPS.md ] && cp .github/APPS.md public/APPS.md || true
           
           touch public/.nojekyll
 

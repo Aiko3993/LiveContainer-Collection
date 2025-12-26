@@ -1,0 +1,11 @@
+{
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "sources/standard/apps.json",
+                "sources/nsfw/apps.json"
+            ],
+            "url": "./.github/schemas/apps.schema.json"
+        }
+    ]
+}

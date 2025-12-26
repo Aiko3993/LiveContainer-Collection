@@ -1,7 +1,7 @@
 # Aiko3993's Sideload Source for iOS
 
 [![Web Interface](https://img.shields.io/badge/Web_Interface-View_Source-blue?style=for-the-badge&logo=safari)](https://aiko3993.github.io/iOS-Sideload-Source/)
-[![Add App](https://img.shields.io/badge/Contribute-Add_App-green?style=for-the-badge&logo=github)](CONTRIBUTING.md)
+[![Add App](https://img.shields.io/badge/Contribute-Add_App-green?style=for-the-badge&logo=github)](.github/CONTRIBUTING.md)
 
 This is a sideload app source compatible with **AltStore**, **SideStore**, and **LiveContainer**, and maybe more.
 It automatically fetches the latest IPAs from GitHub Releases and generates a universal source file.  
@@ -27,13 +27,13 @@ https://raw.githubusercontent.com/Aiko3993/iOS-Sideload-Source/main/sources/stan
 ## Contributing
 
 Want to add a new app?
-👉 **[Read the Contributing Guide](CONTRIBUTING.md)**
+👉 **[Read the Contributing Guide](.github/CONTRIBUTING.md)**
 
 ## Supported Apps
 
 > *The supported app list is automatically generated.*
 
-👉 **[View Supported Apps List](APPS.md)**
+👉 **[View Supported Apps List](.github/APPS.md)**
 
 ## Automation
 

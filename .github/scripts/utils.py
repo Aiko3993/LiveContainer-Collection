@@ -355,6 +355,90 @@ def normalize_name(s):
     s = re.sub(r'-(nightly|beta|alpha|dev|pre-release|experimental|trollstore|jit|sideloading)', '', s)
     return re.sub(r'[^a-z0-9]', '', s)
 
+def load_config():
+    """Load external configuration from .github/config.yml."""
+    config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.yml')
+    default_config = {
+        'skip_versions': ['nightly', 'latest', 'stable', 'dev', 'beta', 'alpha', 'release'],
+        'icon_scoring': {'exclude_patterns': ['android', 'small', 'toolbar', 'preview', 'mask', 'rounded', 
+                                            'circle', 'notification', 'tabbar', 'watch', 'macos', 'tvos']}
+    }
+    
+    if not os.path.exists(config_path):
+        return default_config
+        
+    try:
+        import yaml
+        with open(config_path, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f) or default_config
+    except ImportError:
+        logger.warning("PyYAML not installed. Using internal simple parser for config.yml.")
+        try:
+            with open(config_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            # Simple parser for our specific config structure
+            parsed = {}
+            current_key = None
+            
+            for line in content.splitlines():
+                line = line.strip()
+                if not line or line.startswith('#'): continue
+                
+                # Check for top-level keys like "skip_versions:"
+                if line.endswith(':'):
+                    current_key = line[:-1]
+                    # Only support top-level keys useful for us
+                    if current_key == 'skip_versions':
+                        parsed[current_key] = []
+                    elif current_key == 'icon_scoring':
+                        parsed[current_key] = {'exclude_patterns': []}
+                    continue
+                
+                # Check for list items "- item"
+                if line.startswith('- ') and current_key:
+                    value = line[2:].strip()
+                    if current_key == 'skip_versions':
+                        parsed['skip_versions'].append(value)
+                    elif current_key == 'icon_scoring/exclude_patterns':
+                        # Hacky nested handling for our specific file structure if indented correctly
+                        # simplified: if we are in icon_scoring logic
+                        pass
+            
+            # Re-parse more robustly with simple regex for specific expected structure
+            # skip_versions list
+            skip_match = re.search(r'skip_versions:\s*((?:-\s+.*\n?)+)', content)
+            if skip_match:
+                items = re.findall(r'-\s+(.*)', skip_match.group(1))
+                parsed['skip_versions'] = [i.strip() for i in items]
+            
+            # exclude_patterns list inside icon_scoring
+            # Look for icon_scoring: ... exclude_patterns: ... list
+            # We just scan for exclude_patterns block specifically
+            exclude_match = re.search(r'exclude_patterns:\s*((?:-\s+.*\n?)+)', content)
+            if exclude_match:
+                items = re.findall(r'-\s+(.*)', exclude_match.group(1))
+                if 'icon_scoring' not in parsed: parsed['icon_scoring'] = {}
+                parsed['icon_scoring']['exclude_patterns'] = [i.strip() for i in items]
+                
+            # Merge with defaults for safety
+            final_config = default_config.copy()
+            if 'skip_versions' in parsed: final_config['skip_versions'] = parsed['skip_versions']
+            if 'icon_scoring' in parsed and 'exclude_patterns' in parsed['icon_scoring']:
+                 final_config['icon_scoring']['exclude_patterns'] = parsed['icon_scoring']['exclude_patterns']
+            
+            return final_config
+            
+        except Exception as e:
+             logger.error(f"Fallback parsing failed: {e}")
+             return default_config
+    except Exception as e:
+        logger.error(f"Failed to load config.yml: {e}")
+        return default_config
+
+# Global config cache
+GLOBAL_CONFIG = load_config()
+
 def score_icon_path(path):
     """Score a path or URL for its quality as an icon."""
     p = path.lower()
@@ -407,20 +491,28 @@ def score_icon_path(path):
     
     if 'marketing' in filename: score += 45
     
-    # Penalties for things that are likely NOT the main app icon or are pre-masked
-    if 'android' in p: score -= 60
-    if 'small' in filename: score -= 20
-    if 'toolbar' in filename: score -= 30
-    if 'preview' in filename: score -= 40
-    if 'mask' in filename: score -= 50
-    if 'rounded' in filename: score -= 50
-    if 'circle' in filename: score -= 50
-    if 'notification' in filename: score -= 50
-    if 'tabbar' in filename: score -= 40
-    if 'watch' in p: score -= 30
-    if 'macos' in p: score -= 10 # macOS icons are often pre-rounded/irregular
-    if 'tvos' in p: score -= 20
-    
+    # Penalties from config
+    exclude_patterns = GLOBAL_CONFIG.get('icon_scoring', {}).get('exclude_patterns', [])
+    for pattern in exclude_patterns:
+        # Some checks were filename only, some were path. 
+        # To be safe and generic, we check if pattern is in filename OR path depending on context?
+        # Orig logic mixed them. 'android' in p; 'small' in filename.
+        # Let's standardize: if strict specific logic needed, keep it. 
+        # But for generic list: check checks filename mostly?
+        # 'android' in p is path check. 'watch' in p is path check.
+        # 'small' in filename.
+        
+        # Heuristic: if pattern is short/ambiguous, check filename. If distinct like 'android', check path.
+        # For simplicity in external config: check PATH for everything is stricter but safer?
+        # Or check both. 
+        # Original:
+        # if 'android' in p: score -= 60
+        # if 'small' in filename: score -= 20
+        
+        # Let's stick to checking PATH for robust exclusion.
+        if pattern in p:
+            score -= 30 # Generic penalty
+            
     # URL reliability
     if 'raw.githubusercontent.com' in p: score += 20
     elif 'github.com' in p and '/raw/' in p: score += 15

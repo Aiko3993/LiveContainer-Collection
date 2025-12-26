@@ -9,7 +9,7 @@ from datetime import datetime
 from PIL import Image
 from io import BytesIO
 
-from utils import load_json, save_json, logger, GitHubClient, find_best_icon, score_icon_path, normalize_name
+from utils import load_json, save_json, logger, GitHubClient, find_best_icon, score_icon_path, normalize_name, GLOBAL_CONFIG
 
 def is_meaningless_version(version_str):
     """Check if a version string is redundant or meaningless."""
@@ -353,26 +353,24 @@ def apply_bundle_id_suffix(bundle_id, app_name, repo_name):
             
     return new_bundle_id
 
-def process_app(app_config, existing_source, client, apps_list_to_update=None):
+def process_app(app_config, current_app_entry, client):
+    """
+    Process a single app.
+    Returns: (app_entry, metadata_updates_dict)
+    - If app_entry is None, it means the app should not be added (e.g. error/skipped).
+    - metadata_updates_dict contains keys like 'icon_url', 'bundle_id' if they need to be synced back.
+    """
     repo = app_config['github_repo']
     name = app_config['name']
     
     logger.info(f"Processing {name} ({repo})...")
     
-    # Improved matching: Must match BOTH repo and name to support flavors
-    app_entry = next((a for a in existing_source['apps'] 
-                      if a.get('githubRepo') == repo and a.get('name') == name), None)
-
-    # Fallback for migration: if no exact match, try repo-only match IF this repo is only used once in apps.json
-    if not app_entry and apps_list_to_update is not None:
-        repo_usage_count = sum(1 for a in apps_list_to_update if a.get('github_repo') == repo)
-        if repo_usage_count == 1:
-            repo_matches = [a for a in existing_source['apps'] if a.get('githubRepo') == repo]
-            if len(repo_matches) == 1:
-                app_entry = repo_matches[0]
-                logger.info(f"Migration: Matched {name} to existing entry {app_entry.get('name')} via repo {repo}")
+    # Clone the entry if it exists to avoid side effects
+    import copy
+    app_entry = copy.deepcopy(current_app_entry) if current_app_entry else None
 
     found_icon_auto = None
+    found_bundle_id_auto = None # Initialize variable
 
     release = None
     workflow_run = None
@@ -385,7 +383,7 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
         workflow_run = client.get_latest_workflow_run(repo, workflow_file)
         if not workflow_run:
             logger.warning(f"No successful workflow run found for {name} ({workflow_file})")
-            return existing_source
+            return current_app_entry, {}
         
         # 1. Select the best artifact
         artifacts = client.get_workflow_run_artifacts(repo, workflow_run['id'])
@@ -414,7 +412,7 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
         
         if not artifact:
             logger.warning(f"No suitable artifact found for {name} in run {workflow_run['id']}")
-            return existing_source
+            return current_app_entry, {}
             
         version = workflow_run['head_sha'][:7]
         release_date = workflow_run['created_at'].split('T')[0]
@@ -456,12 +454,12 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
 
         if not release:
             logger.warning(f"No release found for {name}")
-            return existing_source
+            return current_app_entry, {}
 
         ipa_asset = select_best_ipa(release.get('assets', []), app_config)
         if not ipa_asset:
             logger.warning(f"No IPA found for {name}")
-            return existing_source
+            return current_app_entry, {}
 
         download_url = ipa_asset['browser_download_url']
         direct_url = download_url # For releases, the direct URL is the download URL
@@ -473,7 +471,6 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
 
     # 2. Check if already up to date and update metadata
     found_icon_auto = None
-    found_bundle_id_auto = None
     
     if app_entry:
         app_entry['githubRepo'] = repo 
@@ -488,12 +485,17 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
         is_up_to_date = latest_version.get('version') == version
         has_direct_link = direct_url and latest_version.get('downloadURL') == direct_url
         
-        is_generic = version.lower() in ['nightly', 'latest', 'stable', 'dev', 'beta']
+        skip_versions = GLOBAL_CONFIG.get('skip_versions', [])
+        # Case insensitive check
+        skip_versions = [x.lower() for x in skip_versions]
+        
+        is_generic = version.lower() in skip_versions
         
         # If we are up to date and have the link we want, we can skip
         # BUT: don't skip if the version is generic (like "nightly"), because we want to 
         # extract the real version from the IPA.
         if is_up_to_date and (has_direct_link or not direct_url) and not is_generic:
+             metadata_updates = {}
              # Even if up to date, we might want to update some metadata from config
              config_icon = app_config.get('icon_url')
              if config_icon and config_icon not in ['None', '_No response_'] and app_entry.get('iconURL') != config_icon:
@@ -506,7 +508,7 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
                  logger.info(f"Updated tint color for {name} from config")
              
              logger.info(f"Skipping {name} (Already up to date at version {version})")
-             return existing_source
+             return app_entry, {} # No metadata updates needed if skipping
 
         # If not skipped, proceed with metadata updates
         if 'bundleIdentifier' in app_entry:
@@ -542,6 +544,7 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
                     app_entry['iconURL'] = best_repo_icon
                     found_icon_auto = best_repo_icon
                 else:
+                    # Check if improvement
                     curr_q, _, _ = get_image_quality(current_icon, client)
                     curr_path = score_icon_path(current_icon)
                     curr_total = curr_q + curr_path
@@ -690,7 +693,11 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
         
         # Improve version string for Nightly/Workflow builds
         if ipa_version:
-            is_generic = version.lower() in ['nightly', 'latest', 'stable', 'dev', 'beta']
+            skip_versions = GLOBAL_CONFIG.get('skip_versions', [])
+            # Case insensitive check
+            skip_versions = [x.lower() for x in skip_versions]
+            
+            is_generic = version.lower() in skip_versions
             if workflow_file or is_generic:
                 # If it's a workflow, we already have a SHA version from before, but IPA metadata is better
                 # if it contains the real version.
@@ -709,14 +716,14 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
             logger.warning(f"Failed to parse IPA metadata for {name}, using fallback.")
             version = "0.0.0"
             bundle_id = default_bundle_id
-
+            
         sha256 = get_ipa_sha256(temp_path)
         bundle_id = apply_bundle_id_suffix(bundle_id, name, repo)
 
     except Exception as e:
         logger.error(f"Processing failed for {name}: {e}")
         if os.path.exists(temp_path): os.remove(temp_path)
-        return existing_source
+        return current_app_entry, {}
     finally:
         if os.path.exists(temp_path): os.remove(temp_path)
     
@@ -759,27 +766,29 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
         # Handle Icon (Config > Auto-fetch > Fallback)
         icon_url = app_config.get('icon_url', '')
         if not icon_url or icon_url in ['None', '_No response_']:
-            icon_candidates = find_best_icon(repo, client)
-            if icon_candidates:
-                # Analyze candidates and pick the one with the highest quality score
-                best_cand = None
-                max_q = -1
-                
-                for cand in icon_candidates:
-                    q_score, is_sq, has_trans = get_image_quality(cand, client)
-                    if q_score > max_q:
-                        max_q = q_score
-                        best_cand = cand
-                
-                if best_cand:
-                    icon_url = best_cand
-                    found_icon_auto = best_cand
-                    logger.info(f"Selected best quality icon for {name} (Score: {max_q}): {icon_url}")
-                else:
-                    # Ultimate fallback
-                    icon_url = icon_candidates[0]
-                    found_icon_auto = icon_candidates[0]
-                    logger.warning(f"Could not analyze icons for {name}, using first candidate: {icon_url}")
+            # Try to use found icon if any
+            if found_icon_auto:
+                 icon_url = found_icon_auto
+            else:
+                 # Fallback to search
+                icon_candidates = find_best_icon(repo, client)
+                if icon_candidates:
+                    best_cand = None
+                    max_q = -1
+                    for cand in icon_candidates:
+                        q_score, is_sq, has_trans = get_image_quality(cand, client)
+                        if q_score > max_q:
+                            max_q = q_score
+                            best_cand = cand
+                    
+                    if best_cand:
+                        icon_url = best_cand
+                        found_icon_auto = best_cand
+                        logger.info(f"Selected best quality icon for {name} (Score: {max_q}): {icon_url}")
+                    else:
+                        icon_url = icon_candidates[0]
+                        found_icon_auto = icon_candidates[0]
+                        logger.warning(f"Could not analyze icons for {name}, using first candidate: {icon_url}")
         
         tint_color = app_config.get('tint_color')
         if not tint_color:
@@ -803,23 +812,16 @@ def process_app(app_config, existing_source, client, apps_list_to_update=None):
             "screenshotURLs": [], 
             "versions": [new_version_entry]
         }
-        existing_source['apps'].append(app_entry)
+        # Don't append here, return it!
 
-    # Sync found metadata back to apps_list_to_update
-    if (found_icon_auto or found_bundle_id_auto) and apps_list_to_update is not None:
-        # Find the original config entry
-        orig_config = next((item for item in apps_list_to_update if item.get('github_repo') == repo and item.get('name') == name), None)
-        if orig_config:
-            if found_icon_auto and not orig_config.get('icon_url'):
-                logger.info(f"Syncing found icon back to apps.json for {name}")
-                orig_config['icon_url'] = found_icon_auto
-            if found_bundle_id_auto and not orig_config.get('bundle_id'):
-                # We only sync back if it's not a placeholder
-                if not found_bundle_id_auto.startswith('com.placeholder.'):
-                    logger.info(f"Syncing found bundle_id back to apps.json for {name}")
-                    orig_config['bundle_id'] = found_bundle_id_auto
+    # Construct metadata updates dict
+    metadata_updates = {}
+    if found_icon_auto:
+        metadata_updates['icon_url'] = found_icon_auto
+    if found_bundle_id_auto and not found_bundle_id_auto.startswith('com.placeholder.'):
+        metadata_updates['bundle_id'] = found_bundle_id_auto
 
-    return existing_source
+    return app_entry, metadata_updates
 
 def update_repo(config_file, source_file, source_name, source_identifier, client):
     if not os.path.exists(config_file):
@@ -838,8 +840,62 @@ def update_repo(config_file, source_file, source_name, source_identifier, client
     source_data['name'] = source_name
     source_data['identifier'] = source_identifier
     
-    for app in apps:
-        source_data = process_app(app, source_data, client, apps_list_to_update=apps)
+    # Pre-map existing apps for faster lookup during parallel processing
+    existing_apps_map = {}
+    for a in source_data.get('apps', []):
+        if a.get('githubRepo') and a.get('name'):
+            key = f"{a['githubRepo']}::{a['name']}"
+            existing_apps_map[key] = a
+    
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    
+    new_apps_list = []
+    
+    # Use fewer workers to avoid hitting GitHub API rate limits too hard/fast.
+    MAX_WORKERS = 5
+    
+    logger.info(f"Starting parallel update with {MAX_WORKERS} workers for {len(apps)} apps...")
+    
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        future_to_app = {}
+        for app_config in apps:
+            repo = app_config['github_repo']
+            name = app_config['name']
+            key = f"{repo}::{name}"
+            
+            # Find current entry to pass to worker
+            current_entry = existing_apps_map.get(key)
+            
+            future = executor.submit(process_app, app_config, current_entry, client)
+            future_to_app[future] = name
+            
+        for future in as_completed(future_to_app):
+            name = future_to_app[future]
+            try:
+                resulting_entry, metadata_updates = future.result()
+                
+                if resulting_entry:
+                    new_apps_list.append(resulting_entry)
+                
+                if metadata_updates:
+                    # Sync back to apps config (in-memory)
+                    # We need to find the specific app_config object in 'apps' list again
+                    target_config = next((x for x in apps if x['name'] == name), None)
+                    if target_config:
+                        for k, v in metadata_updates.items():
+                            if k == 'icon_url':
+                                if not target_config.get('icon_url'):
+                                    logger.info(f"Syncing found icon back to apps.json for {name}")
+                                    target_config['icon_url'] = v
+                            elif k == 'bundle_id':
+                                if not target_config.get('bundle_id'):
+                                    logger.info(f"Syncing found bundle_id back to apps.json for {name}")
+                                    target_config['bundle_id'] = v
+
+            except Exception as exc:
+                logger.error(f"App {name} generated an exception: {exc}")
+
+    source_data['apps'] = new_apps_list
     
     # Final pass: Global deduplication and cleanup of versions in source.json
     for a in source_data['apps']:
@@ -866,17 +922,17 @@ def update_repo(config_file, source_file, source_name, source_identifier, client
     valid_repos = set(app['github_repo'] for app in apps)
     valid_names = set((app['github_repo'].split('/')[0], app['name']) for app in apps)
 
-    new_apps_list = []
+    final_apps_list = []
     for a in source_data['apps']:
         repo = a.get('githubRepo')
         if repo:
             if repo in valid_repos:
-                new_apps_list.append(a)
+                final_apps_list.append(a)
         else:
             if (a.get('developerName'), a.get('name')) in valid_names:
-                new_apps_list.append(a)
+                final_apps_list.append(a)
     
-    source_data['apps'] = new_apps_list
+    source_data['apps'] = final_apps_list
     
     app_order = {app['github_repo']: idx for idx, app in enumerate(apps)}
     
@@ -964,9 +1020,9 @@ def main():
     changed_nsfw = update_repo('sources/nsfw/apps.json', 'sources/nsfw/source.json', "Aiko3993's Sideload Source (NSFW)", "io.github.aiko3993.source.nsfw", client)
 
     # Generate Combined App List only if something changed or APPS.md is missing
-    if changed_std or changed_nsfw or not os.path.exists('APPS.md'):
-        logger.info("Generating updated APPS.md...")
-        generate_combined_apps_md('sources/standard/apps.json', 'sources/nsfw/apps.json', 'APPS.md')
+    if changed_std or changed_nsfw or not os.path.exists('.github/APPS.md'):
+        logger.info("Generating updated .github/APPS.md...")
+        generate_combined_apps_md('sources/standard/apps.json', 'sources/nsfw/apps.json', '.github/APPS.md')
     else:
         logger.info("No changes in sources, skipping APPS.md regeneration.")
 
