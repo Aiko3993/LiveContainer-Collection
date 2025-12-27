@@ -107,13 +107,12 @@ The deployment structure is a flattened version of `main`:
         *   **Metadata Auto-Sync**: Fields like `icon_url` and `bundle_id` discovered by the script are automatically written back to `apps.json` to speed up future runs and improve data completeness.
         *   **Daily Artifact Releases**: Nightly/Artifact builds are hosted in daily releases (`artifacts-YYYYMMDD`) to avoid cluttering a single release.
         *   **Smart Cleanup**: Automatically deletes old assets for the same app (based on Bundle ID/App Name) before uploading new ones, and retains only the last 7 days of daily releases.
-        *   **Artifact Selection Heuristic**: When searching inside GitHub Artifacts (ZIP), the script follows a 6-step heuristic:
-            1. **Exact Name Match**: Matches `artifact_name` from config.
-            2. **IPA Suffix**: Looks for files ending in `.ipa`.
-            3. **Keyword Search**: Looks for "ipa", "ios", or "app" in artifact names.
-            4. **Exclusion Filter**: Removes artifacts containing "log", "symbol", "test", "debug", etc.
-            5. **IPA Repackaging**: If only a `.app` folder is found, the script automatically packages it into a standard `.ipa` (Payload/ structure).
-            6. **Ultimate Fallback**: Uses the first available artifact if all else fails.
+        *   **Artifact Selection Heuristic**: The script uses a **Dynamic Token Comparison** algorithm to select the best IPA without manual configuration:
+            1. **Regex Override**: Matches `ipa_regex` (if configured) strictly.
+            2. **Token Scoring**: Breaks down App Name and Asset Name into tokens.
+            3. **Surprise Penalty**: If an asset contains "flavor" tokens (e.g., `-HV`, `-Remote`) that are NOT present in the App Name, it is penalized/rejected. This prevents "UTM" from incorrectly matching "UTM-HV".
+            4. **Safety Filter**: Version numbers (e.g., `v1.0`) are ignored during token comparison to prevent false positives.
+            5. **Repo Fallback**: If no good match is found (score too low), the update is skipped to avoid downloading incorrect files.
         *   **Artifact Hosting & Direct Links**: 
             *   **Direct Link Generation**: Instead of relying solely on `nightly.link` (which often returns 404s or ZIPs), the script now downloads artifacts via official GitHub API, repacks them if needed, and uploads them to a daily release (`artifacts-YYYYMMDD`).
             *   **Compatibility**: This provides standard IPA direct download links (`browser_download_url`), ensuring 100% compatibility with tools like LiveContainer and SideStore.
@@ -314,6 +313,7 @@ In case of severe failure (e.g., generating a corrupted source.json causing clie
 | v1.20 | 2025-12-26 | AI Assistant | **Parallelization**: Refactored `update_source.py` to support multithreaded processing (5x concurrency), significantly reducing execution time for network-bound tasks. |
 | v1.21 | 2025-12-26 | AI Assistant | **Architecture Refinement**: Externalized configuration to `.github/config.yml` and implemented JSON Schema validation with VSCode integration. |
 | v1.22 | 2025-12-26 | AI Assistant | **Standardization**: Reorganized repository structure by moving `APPS.md`, `CONTRIBUTING.md`, and schemas to `.github/` directories. |
+| v1.23 | 2025-12-27 | AI Assistant | **Smart Logic**: Implemented **Dynamic Token Comparison** in `update_source.py`. The script now automatically detects and rejects "surprise" flavors (like `-HV`) if they are not explicitly requested in the App Name, eliminating the need for manual regex configuration. |
 
 ---
 

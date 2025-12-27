@@ -199,65 +199,91 @@ def select_best_ipa(assets, app_config):
         except Exception as e:
             logger.error(f"Invalid ipa_regex '{ipa_regex}': {e}")
 
-    # 2. Fuzzy Match with Name or Repo Name
-    # This handles "UTM-HV" matching "UTM HV" or "UTM_HV"
+    # 2. Dynamic Token Comparison (Smart Matching)
+    # Goal: Ensure file doesn't contain "flavor" tokens (like "-HV") that are NOT in the App Name.
     norm_app_name = normalize_name(app_config['name'])
-    norm_repo_name = normalize_name(app_config['github_repo'].split('/')[-1])
     
-    # Track scores for fallback
+    # helper to tokenize
+    def tokenize(s):
+        # Split by non-alphanumeric chars
+        tokens = set(filter(None, re.split(r'[^a-z0-9]', s.lower())))
+        return tokens
+
+    app_tokens = tokenize(app_config['name'])
+    # Add repo name parts to allow matches like "UTM" matching "utmapp/UTM"
+    repo_tokens = tokenize(app_config['github_repo'])
+    
+    # Ignore identifying tokens that appear in filenames but aren't flavors
+    ignore_tokens = {'ipa', 'ios', 'app', 'v', 'ver', 'version', 'release', 'nightly', 'beta', 'alpha', 'dev', 'debug', 'stable', 'latest', 'build'}
+    # Also ignore purely numeric tokens (version numbers)
+    
     scored_assets = []
     
-    # Extract "flavor" keywords from app name
-    # We want keywords from the whole name, including those in brackets
-    name_words = set(re.findall(r'[a-z0-9]{2,}', app_config['name'].lower()))
-    repo_words = set(re.findall(r'[a-z0-9]{2,}', app_config['github_repo'].lower()))
-    flavor_keywords = name_words - repo_words
-
     for a in ipa_assets:
-        base_name = os.path.splitext(a['name'])[0]
-        norm_base = normalize_name(base_name)
-        
-        # Exact match with app name is best
-        if norm_base == norm_app_name:
-            return a
+        try:
+            asset_tokens = tokenize(a['name'])
             
-        # Exact match with repo name is second best
-        score = 0
-        if norm_base == norm_repo_name:
-            score += 50
-        
-        # Calculate a subset score
-        if norm_app_name in norm_base: score += 10
-        if norm_base in norm_app_name: score += 5
-        
-        # Bonus for matching "flavor" keywords
-        base_name_lower = base_name.lower()
-        for kw in flavor_keywords:
-            if kw in base_name_lower:
-                score += 40 # Increased bonus to beat repo name match if flavor matches
-        
-        scored_assets.append((score, a))
+            # Calculate "Surprise" tokens: present in Asset but NOT in App Name/Repo/Ignore list
+            # We want to know if the asset has EXTRA meaning that was not requested
+            
+            # We filter out numbers (versions) from surprise
+            surprise_tokens = []
+            for t in asset_tokens:
+                if t in app_tokens or t in repo_tokens or t in ignore_tokens:
+                    continue
+                if t.isdigit(): # version number?
+                     continue
+                if t.startswith('v') and t[1:].isdigit(): # v1, v2 etc
+                     continue
+                # short tokens might be noise
+                if len(t) < 2: 
+                     continue
+                surprise_tokens.append(t)
+            
+            # Scoring
+            score = 0
+            
+            # Exact Match Bonus
+            norm_asset = normalize_name(os.path.splitext(a['name'])[0])
+            if norm_asset == norm_app_name:
+                score += 100
+                
+            # Subset Bonus
+            if norm_app_name in norm_asset:
+                score += 50
+            if norm_asset in norm_app_name: # rare but good
+                score += 20
+                
+            # Surprise Penalty (The Core Fix)
+            if surprise_tokens:
+                # If there are surprise tokens, it's likely a different flavor
+                # e.g. App="UTM", Asset="UTM-HV" -> Surprise="hv" -> Penalty
+                logger.debug(f"Asset {a['name']} has surprise tokens: {surprise_tokens}")
+                score -= 1000 # Massive penalty to prevent selection
+            else:
+                # Clean match bonus
+                score += 30
+            
+            scored_assets.append((score, a))
+            
+        except Exception as e:
+            logger.warning(f"Error scoring asset {a['name']}: {e}")
+            scored_assets.append((-999, a))
 
     if scored_assets:
         scored_assets.sort(key=lambda x: x[0], reverse=True)
-        if scored_assets[0][0] > 0:
-            return scored_assets[0][1]
-
-    # 3. Smart Filtering: Exclude common "flavors" if multiple exist
-    # We prefer the one without suffixes like -Remote, -HV, -SE
-    exclude_patterns = ['-remote', '-hv', '-se', '-jailbroken', '-macos', '-linux', '-windows']
-    
-    filtered = []
-    for a in ipa_assets:
-        name_lower = a['name'].lower()
-        if not any(p in name_lower for p in exclude_patterns):
-            filtered.append(a)
-            
-    if filtered:
-        return filtered[0]
+        best_score, best_asset = scored_assets[0]
         
-    # 4. Fallback: Just return the first one
-    return ipa_assets[0]
+        # Only select if score is reasonable (not massively penalized)
+        # We use -500 as threshold to allow for some minor mismatches but block flavor mismatches
+        if best_score > -500: 
+            return best_asset
+        
+    logger.warning(f"No suitable IPA found for {app_config['name']} (Strict matching rejected aliases)")
+    return None
+
+    # Fallback removed - we do NOT want to return a random first file if it mismatched
+    # return ipa_assets[0]
 
 def get_image_quality(image_url, client):
     """
